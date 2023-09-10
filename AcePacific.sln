@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AcePacific.Busines", "..\Ac
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AcePacific.Common", "..\AcePacific.Common\AcePacific.Common.csproj", "{37CDD0EE-22EB-4A78-96FE-DAF3F308701F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AcePacific.Data", "..\AcePacific.Data\AcePacific.Data.csproj", "{116B1F32-061F-45EA-AE25-A56F483FAC77}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{37CDD0EE-22EB-4A78-96FE-DAF3F308701F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{37CDD0EE-22EB-4A78-96FE-DAF3F308701F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{37CDD0EE-22EB-4A78-96FE-DAF3F308701F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{116B1F32-061F-45EA-AE25-A56F483FAC77}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{116B1F32-061F-45EA-AE25-A56F483FAC77}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{116B1F32-061F-45EA-AE25-A56F483FAC77}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{116B1F32-061F-45EA-AE25-A56F483FAC77}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
