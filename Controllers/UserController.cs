@@ -27,6 +27,32 @@ namespace AcePacific.API.Controllers
                 return BadRequest(ex.Message);
             }
         }
+        [HttpPost("RegisterUser")]
+        public async Task<ActionResult<Response<CustomerViewItem>>> RegisterUser(RegisterUserModel model)
+        {
+            try
+            {
+                var response = await _userService.RegisterUser(model);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+        [HttpPost("Login")]
+        public async Task<ActionResult<Response<LoginItem>>> Login(LoginDto model)
+        {
+            try
+            {
+                var response = await _userService.Login(model);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
 
 
     }
