@@ -29,6 +29,7 @@ namespace AcePacific
                 });
             var mapper = mappingConfiguration.CreateMapper();
             services.AddSingleton(mapper);
+            services.AddIdentityServices(config);
 
             var connectionString = config.GetConnectionString("DefaultConnection");
             services.AddDbContext<AppDbContext>(options =>
@@ -37,6 +38,13 @@ namespace AcePacific
             }, ServiceLifetime.Scoped);
             services.AddSwaggerGen();
             services.SwaggerExtension();
+            services.AddCors(opt =>
+            {
+                opt.AddPolicy("CorsPolicy", opt =>
+                {
+                    opt.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin();
+                });
+            });
             services.AddSingleton(config.GetSection("AppSettings").Get<AppSettings>());
             services.RegisterApplicationService<UserService>();
             services.RegisterLibraryServices<AppDbContext, UserRepository>();
@@ -55,8 +63,11 @@ namespace AcePacific
             // Configure the HTTP request pipeline.
 
             app.UseHttpsRedirection();
+            app.UseRouting();
+            app.UseStaticFiles();
             app.UseSwagger();
-            app.UseAuthorization();
+            app.UseCors("CorsPolicy");
+            app.UseAuthentication();
             app.UseAuthorization();
 
 
