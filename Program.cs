@@ -1,4 +1,11 @@
 using AcePacific.API.ExtensionServices;
+using AcePacific.API.MappingConfigurations;
+using AcePacific.Busines.Services;
+using AcePacific.Data.DataAccess;
+using AcePacific.Data.Repositories;
+using AcePacific.Data.ViewModel;
+using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 
 namespace AcePacific
 {
@@ -14,10 +21,25 @@ namespace AcePacific
 
             services.AddControllers();
             services.AddEndpointsApiExplorer();
+
+            var mappingConfiguration = new MapperConfiguration(
+                opt =>
+                {
+                    opt.AddProfile(new MappingConfigurations());
+                });
+            var mapper = mappingConfiguration.CreateMapper();
+            services.AddSingleton(mapper);
+
+            var connectionString = config.GetConnectionString("DefaultConnection");
+            services.AddDbContext<AppDbContext>(options =>
+            {
+                options.UseSqlServer(connectionString);
+            }, ServiceLifetime.Scoped);
             services.AddSwaggerGen();
             services.SwaggerExtension();
-
-
+            services.AddSingleton(config.GetSection("AppSettings").Get<AppSettings>());
+            services.RegisterApplicationService<UserService>();
+            services.RegisterLibraryServices<AppDbContext, UserRepository>();
 
 
 

@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 	<ItemGroup>
+		<PackageReference Include="NetCore.AutoRegisterDi" Version="2.1.0" />
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
 		<PackageReference Include="AutoMapper" Version="12.0.1" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.16" />
@@ -15,5 +16,9 @@
 		</PackageReference>
 		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.0" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.16" />
+	</ItemGroup>
+	<ItemGroup>
+	  <ProjectReference Include="..\AcePacific.Busines\AcePacific.Busines.csproj" />
+	  <ProjectReference Include="..\AcePacific.Data\AcePacific.Data.csproj" />
 	</ItemGroup>
 </Project>
