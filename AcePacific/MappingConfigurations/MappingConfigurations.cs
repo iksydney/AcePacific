@@ -9,6 +9,8 @@ namespace AcePacific.API.MappingConfigurations
         public MappingConfigurations()
         {
             CreateMap<User, RegisterUserModel>().ReverseMap();
+            CreateMap<CreatWalletViewModel, Wallet>().ReverseMap();
+            CreateMap<IntraTransferDto, Wallet>().ReverseMap();
         }
     }
 }
