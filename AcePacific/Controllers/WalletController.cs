@@ -41,5 +41,31 @@ namespace AcePacific.API.Controllers
                 return BadRequest(ex.Message);
             }
         }
+        [HttpPost("MakeIntraTransfer")]
+        public async Task<ActionResult<Response<string>>> MakeIntraTransfer(IntraTransferDto model)
+        {
+            try
+            {
+                var response = await _walletSevice.IntraTransfer(model);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+        [HttpPost("UpdatePin")]
+        public async Task<ActionResult<Response<string>>> UpdatePin(UpdatePinModel model)
+        {
+            try
+            {
+                var response = await _walletSevice.UpdatePin(model);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }

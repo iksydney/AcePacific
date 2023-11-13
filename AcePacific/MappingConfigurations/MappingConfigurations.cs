@@ -11,6 +11,9 @@ namespace AcePacific.API.MappingConfigurations
             CreateMap<User, RegisterUserModel>().ReverseMap();
             CreateMap<CreatWalletViewModel, Wallet>().ReverseMap();
             CreateMap<IntraTransferDto, Wallet>().ReverseMap();
+            CreateMap<UpdatePinModel, Wallet>().ReverseMap();
+            CreateMap<GetWalletResponse, Wallet>().ReverseMap();
+            CreateMap<TransactionLog, TransactionLogItem>().ReverseMap();
         }
     }
 }

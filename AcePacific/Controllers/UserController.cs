@@ -1,7 +1,10 @@
-﻿using AcePacific.Busines.Services;
+﻿using AcePacific.API.ExtensionServices;
+using AcePacific.Busines.Services;
 using AcePacific.Common.Contract;
+using AcePacific.Data.Entities;
 using AcePacific.Data.ViewModel;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AcePacific.API.Controllers
@@ -11,9 +14,13 @@ namespace AcePacific.API.Controllers
     public class UserController : BaseApiController
     {
         private readonly IUserService _userService;
-        public UserController(IUserService userService)
+        private readonly ITokenService _tokenService;
+        private readonly UserManager<User> _userManager;
+        public UserController(IUserService userService, UserManager<User> userManager, ITokenService tokenService)
         {
             _userService = userService;
+            _userManager = userManager;
+            _tokenService = tokenService;
         }
         [HttpGet("GetUserByPhoneNumber/{phoneNumber}")]
         public async Task<ActionResult<Response<PhoneNumberExistsDto>>> CheckifPhoneNumberExists(string phoneNumber)
@@ -53,7 +60,17 @@ namespace AcePacific.API.Controllers
                 return BadRequest(ex.Message);
             }
         }
-
+        [HttpGet("GetCurrentUser")]
+        public async Task<ActionResult<LoginItem>> GetCurrentUser()
+        {
+            var user = await _userManager.FindByEMailFromClaimPrincipal(User);
+            return new LoginItem
+            {
+                Email = user.Email,
+                UserName = user.UserName,
+                Token = _tokenService.CreateToken(user)
+            };
+        }
 
     }
 }
