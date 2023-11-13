@@ -6,7 +6,6 @@ using AcePacific.Data.Repositories;
 using AcePacific.Data.ViewModel;
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
-using System.Runtime.InteropServices;
 
 namespace AcePacific.Busines.Services
 {
@@ -23,13 +22,17 @@ namespace AcePacific.Busines.Services
         private readonly SignInManager<User> _signInManager;
         private readonly IMapper _mapper;
         private readonly ITokenService _tokenService;
-        public UserService(IUserRepository userRepository, UserManager<User> userManager, SignInManager<User> signInManager, IMapper mapper, ITokenService tokenService)
+        private readonly IWalletRepository _walletRepository;
+        public UserService(IUserRepository userRepository, UserManager<User> userManager, SignInManager<User> signInManager, 
+            IMapper mapper, ITokenService tokenService,
+            IWalletRepository walletReposiroty)
         {
             _userRepository = userRepository;
             _userManager = userManager;
             _signInManager = signInManager;
             _mapper = mapper;
             _tokenService = tokenService;
+            _walletRepository = walletReposiroty;
         }
         public async Task<Response<PhoneNumberExistsDto>> CheckPhoneNumberExists(string phoneNumber)
         {
@@ -78,21 +81,30 @@ namespace AcePacific.Busines.Services
             }
             return await Task.FromResult(response);
         }
+      
         public async Task<Response<CustomerViewItem>> RegisterUser(RegisterUserModel model)
         {
             var response = Response<CustomerViewItem>.Failed(string.Empty);
             try
             {
-                var usernameExists = _userRepository.EmailExiststs(model.Email);
+                var userEmailExists = _userRepository.EmailExiststs(model.Email);
                 var phoneExists = _userRepository.PhoneNumberExists(model.PhoneNumber);
+                var userName = _userRepository.UserNameExists(model.UserName);
 
-                if (usernameExists || phoneExists)
+                if (userEmailExists)
                     return Response<CustomerViewItem>.Failed(ErrorMessages.UserEmailAlreadyExists);
+                if (phoneExists)
+                    return Response<CustomerViewItem>.Failed(ErrorMessages.phoneNumberExists);
+                if (userName)
+                    return Response<CustomerViewItem>.Failed(ErrorMessages.UserNameExists);
 
                 if(model.Password != model.ConfirmPassword)
                     return Response<CustomerViewItem>.Failed(ErrorMessages.PasswordMismatchError);
+
                 var userAccountNumber = Helper.GenerateRandomAccountNumber();
+
                 var checkAccountNumberExists = _userRepository.AccountNumberExists(userAccountNumber);
+
                 if(checkAccountNumberExists)
                     return Response<CustomerViewItem>.Failed(ErrorMessages.UserCreationFailed);
 
@@ -106,12 +118,26 @@ namespace AcePacific.Busines.Services
                     PhoneNumber = model.PhoneNumber,
                     UserName = model.UserName,
                     Gender = model.Gender,
-                    //IsActive = true,
                 };
+
                 var mappedUser = _mapper.Map<User>(user);
                 mappedUser.AccountNumber = userAccountNumber;
                 mappedUser.IsActive = true;
+                mappedUser.IsTransactionPinSet = false;
+
                 var registeredUser = await _userManager.CreateAsync(mappedUser, model.Password);
+                var newWallet = new CreatWalletViewModel
+                {
+                    UserId = mappedUser.Id,
+                    WalletAccountNumber = userAccountNumber,
+                    WalletBalance = 0
+                    
+                };
+
+                var mappedWallet = _mapper.Map<Wallet>(newWallet);
+
+                await _walletRepository.InsertAsync(mappedWallet);
+
                 if (registeredUser.Succeeded)
                 {
                     response = Response<CustomerViewItem>.Success(new CustomerViewItem
@@ -120,15 +146,13 @@ namespace AcePacific.Busines.Services
                         LastName = model.LastName,
                         Email = model.Email,
                         PhoneNumber = model.PhoneNumber,
+                        Token = _tokenService.CreateToken(user)
                     });
                 }
                 else
                 {
                     response = Response<CustomerViewItem>.Failed(ErrorMessages.FailedToRegisterUser);
                 }
-                
-
-
             }catch(Exception ex)
             {
                 response = Response<CustomerViewItem>.Failed(ex.Message);

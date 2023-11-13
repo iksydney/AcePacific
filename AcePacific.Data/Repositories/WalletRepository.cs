@@ -15,23 +15,41 @@ namespace AcePacific.Data.Repositories
         IEnumerable<Wallet> GetWalletPaged(int page, int count, WalletFilter filter = null,
             OrderExpression orderExpression = null);
         IEnumerable<Wallet> GetWalletFilteredQueryable(WalletFilter filter = null);
-        Wallet GetWalletById(Guid id);
-        Wallet GetWalletByReference(string reference);
+        Wallet GetWalletById(string id);
+        Wallet GetWalletByUserId(string userId);
+        //Wallet GetWalletById(string id);
+        //Wallet GetWalletByReference(string reference);
+        Wallet GetWalletByAccountNumber(string accountNumber);
     }
     public class WalletRepository : Repository<Wallet>, IWalletRepository
     {
         public WalletRepository(IDataContextAsync context, IUnitOfWork unitOfWork) : base(context, unitOfWork) { }
 
-        public Wallet GetWalletById(Guid id)
+        public Wallet GetWalletById(string id)
+        {
+            var walletDetail = Table.AsNoTracking().FirstOrDefault(c => c.UserId == id);
+            return walletDetail;
+        }
+        public Wallet GetWalletByAccountNumber(string accountNumber)
+        {
+            var walletDetail = Table.AsNoTracking().FirstOrDefault(c => c.WalletAccountNumber == accountNumber);
+            return walletDetail;
+        }
+        public Wallet GetWalletByUserId(string userId)
+        {
+            var walletDetail = Table.AsNoTracking().FirstOrDefault(c => c.UserId == userId);
+            return walletDetail;
+        }
+        /*public Wallet GetWalletById(string id)
         {
             var walletDetail = Table.AsNoTracking().FirstOrDefault(c => c.Id == id);
             return walletDetail;
-        }
-        public Wallet GetWalletByReference(string reference)
+        }*/
+        /*public Wallet GetWalletByReference(string reference)
         {
             var walletDetail = Table.AsNoTracking().FirstOrDefault(c => c.TransactionReference == reference);
             return walletDetail;
-        }
+        }*/
         public IEnumerable<Wallet> GetWalletFilteredQueryable(WalletFilter filter = null)
         {
             var expression = new WalletQueryObject(filter).Expression;
@@ -78,9 +96,6 @@ namespace AcePacific.Data.Repositories
             {
                 if (filter != null)
                 {
-
-                    if (!string.IsNullOrEmpty(filter.TransactionReference))
-                        And(c => c.TransactionReference.Contains(filter.TransactionReference));
                     if (!string.IsNullOrEmpty(filter.UserId))
                         And(c => c.UserId.ToLower().Contains(filter.UserId.ToLower()));
                     if (filter.DateCreatedFrom.HasValue)

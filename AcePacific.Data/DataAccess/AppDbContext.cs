@@ -20,6 +20,8 @@ namespace AcePacific.Data.DataAccess
         }
         public DbSet<User> Users { get; set; }
         public DbSet<Wallet> Wallets { get; set; }
-        public DbSet<OtpStore> OTPStores { get; set; }
+        public DbSet<OTP> OTPs { get; set; }
+        public DbSet<TransactionLog> TransactionLogs { get; set; }
+        public DbSet<Bank> Banks { get; set; }
     }
 }

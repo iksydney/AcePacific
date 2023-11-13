@@ -1,4 +1,6 @@
-﻿namespace AcePacific.Common.Helpers
+﻿using System.Security.Cryptography;
+
+namespace AcePacific.Common.Helpers
 {
     public static class Helper
     {
@@ -12,6 +14,37 @@
                 randomNumberString = '0' + randomNumberString;
             }
             return randomNumberString;
+        }
+        public static string GenerateTransactionReference()
+        {
+            string timestamp = DateTime.Now.ToString("yyyyMMddHHmmss");
+            string randomComponent = Guid.NewGuid().ToString().Substring(0, 6);
+            string reference = $"{timestamp}-{randomComponent}";
+            return reference;
+        }
+        public static string ComputeHash(string plainText)
+        {
+            SHA1 HashTool = new SHA1Managed();
+            Byte[] PhraseAsByte = System.Text.Encoding.UTF8.GetBytes(string.Concat(plainText));
+            Byte[] EncryptedBytes = HashTool.ComputeHash(PhraseAsByte);
+            HashTool.Clear();
+            return Convert.ToBase64String(EncryptedBytes);
+        }
+        public static decimal ComputeCharge(decimal amount)
+        {
+            var chargeAmount = 0m;
+            if(amount > 0 && amount <= 1000)
+            {
+                chargeAmount = amount / 0.05m;
+            }else if(amount > 1000 && amount <= 10000)
+            {
+                chargeAmount = amount / 0.07m;
+            }
+            else
+            {
+                chargeAmount = amount / 0.1m;
+            }
+            return chargeAmount;
         }
     }
 }

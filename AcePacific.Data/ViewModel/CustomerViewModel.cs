@@ -1,11 +1,12 @@
 ﻿using AcePacific.Common.Constants;
 using AcePacific.Common.Enums;
 using Newtonsoft.Json;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace AcePacific.Data.ViewModel
 {
-    internal class CustomerViewModel
+    internal class BankViewModel
     {
     }
     public class CustomerModel
@@ -65,7 +66,7 @@ namespace AcePacific.Data.ViewModel
         [EmailAddress]
         public string Email { get; set; }
         public string PhoneNumber { get; set; }
-        [RegularExpression("(?=^.{6,10}$)(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&amp;*()_+}{&quot;:;'?/&gt;.&lt;,])(?!.*\\s).*$", ErrorMessage = "Password must have 1 uppercase, 1 lowercase, 1 number, 1 alphanumeric, and at least 6 characters long")]
+        //[PasswordPropertyText]
         public string Password { get; set; }
         public string ConfirmPassword { get; set; }
         public string UserName { get; set; }
@@ -77,6 +78,7 @@ namespace AcePacific.Data.ViewModel
         public string LastName { get; set; }
         public string Email { get; set; }
         public string PhoneNumber { get; set; }
+        public string Token { get; set; }
     }
     public class LoginItem
     {
@@ -88,5 +90,9 @@ namespace AcePacific.Data.ViewModel
     {
         public string Email { get; set; }
         public string Password { get; set; }
+    }
+    public class CurrentUserItem
+    {
+        public string Email { get; set; }
     }
 }

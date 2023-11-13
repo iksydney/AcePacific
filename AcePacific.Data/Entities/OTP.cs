@@ -2,7 +2,7 @@
 
 namespace AcePacific.Data.Entities
 {
-    public class OtpStore
+    public class OTP
     {
         [Key]
         [Required] public int Id { get; set; }

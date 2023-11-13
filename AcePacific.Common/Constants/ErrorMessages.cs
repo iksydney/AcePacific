@@ -15,9 +15,24 @@
 
         public static string Old_Password_Required = "Old Password Required";
         public static string NewPassword_Required = "New Password Required";
-        public static string UserNotFound = "User Not Found";
+        public static string UserNotFound = "Invalid Credentials";
         public static string FailedToRegisterUser = "Failed To Register User";
         public static string PasswordMismatchError = "Password do not Match";
         public static string UserNameOrPasswordIncorrect = "User name or Password is Incorrect";
+        public static string phoneNumberExists = "Phone number exists";
+        public static string UserNameExists = "User Name exists";
+        public static string FailedToRetrieveWallet = "Failed to retrieve wallet";
+        public static string AccountNumberDoesntExist = "Account Number does not exist";
+        public static string BalanceIsLow = "Balance is low";
+        public static string InvalidTransferAmount = "Invalid Transfer Amount";
+        public static string FailedToValidateBalance = "Failed To Validate Balance";
+        public static string PinNotSetup = "Pin Not Setup";
+        public static string IncorrectPin = "Incorrect pin provided";
+    }
+
+
+    public static class ResponseMessage
+    {
+        public static string ValidationSuccessfulTransferCanProceed = "Validation successful. Transfer can proceed.";
     }
 }

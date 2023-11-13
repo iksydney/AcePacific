@@ -8,100 +8,77 @@ using System.Linq.Expressions;
 
 namespace AcePacific.Data.Repositories
 {
-    public interface IUserRepository : IRepositoryAsync<User>
+    public interface IBankRepository : IRepositoryAsync<Bank>
     {
-        IEnumerable<User> GetCustomerPaged(int page, int count, out int totalCount,
-           CustomerFilter filter = null, OrderExpression orderExpression = null);
-        IEnumerable<User> GetCustomerPaged(int page, int count, CustomerFilter filter = null,
+        IEnumerable<Bank> GetBankPaged(int page, int count, out int totalCount,
+           BankFilter filter = null, OrderExpression orderExpression = null);
+        IEnumerable<Bank> GetBankPaged(int page, int count, BankFilter filter = null,
             OrderExpression orderExpression = null);
-        IEnumerable<User> GetCustomerFilteredQueryable(CustomerFilter filter = null);
-        bool UserNameExists(string userName);
-        bool EmailExiststs(string email);
-        bool PhoneNumberExists(string phoneNumber);
-        User FindUserById(string id);
-        User FindUserByName(string userName);
-        User FindUserByEmail(string email);
-        User FindByAccountNumber(string accountNumber);
-        User FindByPhoneNumber(string phoneNumber);
-        bool AccountNumberExists(string accountNumber);
+        IEnumerable<Bank> GetBankFilteredQueryable(BankFilter filter = null);
+        bool BankExists(string bankName);
+        bool bankCodeExiststs(string bankCode);
+        Bank FindUserByBankId(int id);
+        Bank FindUserByBankName(string bankName);
+        Bank FindByBankCode(string bankCode);
     }
-    public class UserRepository : Repository<User>, IUserRepository
+    public class BankRepository : Repository<Bank>, IBankRepository
     {
-        public UserRepository(IDataContextAsync context, IUnitOfWork unitOfWork) : base(context, unitOfWork) { }
+        public BankRepository(IDataContextAsync context, IUnitOfWork unitOfWork) : base(context, unitOfWork) { }
 
-        public bool EmailExiststs(string email)
+        public bool BankExists(string bankName)
         {
-            return Table.AsNoTracking().Any(c => c.Email == email);
+            return Table.AsNoTracking().Any(c => c.BankName == bankName);
         }
-        public bool AccountNumberExists(string accountNumber)
+        public bool bankCodeExiststs(string bankCode)
         {
-            return Table.AsNoTracking().Any(c =>c.AccountNumber == accountNumber);
-        }
-
-        public User FindUserByEmail(string email)
-        {
-            var entity = Table.AsNoTracking().FirstOrDefault(c => c.Email == email);
-            return entity;
+            return Table.AsNoTracking().Any(c =>c.BankCode == bankCode);
         }
 
-        public User FindUserById(string id)
+        public Bank FindUserByBankId(int id)
         {
             var entity = Table.AsNoTracking().FirstOrDefault(c => c.Id == id);
             return entity;
-
-        }
-        public User FindByPhoneNumber(string phoneNumber)
-        {
-            return Table.AsNoTracking().FirstOrDefault(c => c.PhoneNumber == phoneNumber);
-        }
-        public User FindByAccountNumber(string accountNumber)
-        {
-            return Table.AsNoTracking().FirstOrDefault(c => c.AccountNumber == accountNumber);
         }
 
-        public User FindUserByName(string userName)
+        public Bank FindUserByBankName(string bankName)
         {
-            var entity = Table.AsNoTracking().FirstOrDefault(c => c.UserName == userName);
+            var entity = Table.AsNoTracking().FirstOrDefault(c => c.BankName == bankName);
             return entity;
         }
-
-        public bool PhoneNumberExists(string phoneNumber)
+        public Bank FindByBankCode(string bankCode)
         {
-            return Table.AsNoTracking().Any(c => c.PhoneNumber == phoneNumber);
+            var entity = Table.AsNoTracking().FirstOrDefault(c => c.BankCode == bankCode);
+            return entity;
         }
+        
 
-        public bool UserNameExists(string userName)
+        public IEnumerable<Bank> GetBankPaged(int page, int count, out int totalCount, BankFilter filter = null, OrderExpression orderExpression = null)
         {
-            return Table.AsNoTracking().Any(c => c.UserName != userName);
-        }
-
-        public IEnumerable<User> GetCustomerPaged(int page, int count, out int totalCount, CustomerFilter filter = null, OrderExpression orderExpression = null)
-        {
-            var expression = new CustomerQueryObject(filter).Expression;
+            var expression = new BankQueryObject(filter).Expression;
             totalCount = Count(expression);
-            return CustomerPaged(page, count, expression, orderExpression);
+            return BankPaged(page, count, expression, orderExpression);
         }
 
-        private IEnumerable<User> CustomerPaged(int page, int count, Expression<Func<User, bool>> expression, OrderExpression orderExpression)
+        private IEnumerable<Bank> BankPaged(int page, int count, Expression<Func<Bank, bool>> expression, OrderExpression orderExpression)
         {
             var order = ProcessOrderFunc(orderExpression);
             return Fetch(expression, order, page, count);
         }
 
-        public IEnumerable<User> GetCustomerPaged(int page, int count, CustomerFilter filter = null, OrderExpression orderExpression = null)
+        public IEnumerable<Bank> GetBankPaged(int page, int count, BankFilter filter = null, OrderExpression orderExpression = null)
         {
-            var expression = new CustomerQueryObject(filter).Expression;
-            return CustomerPaged(page, count, expression, orderExpression);
+            var expression = new BankQueryObject(filter).Expression;
+            return BankPaged(page, count, expression, orderExpression);
         }
 
-        public IEnumerable<User> GetCustomerFilteredQueryable(CustomerFilter filter = null)
+        public IEnumerable<Bank> GetBankFilteredQueryable(BankFilter filter = null)
         {
-            var expression = new CustomerQueryObject(filter).Expression;
+            var expression = new BankQueryObject(filter).Expression;
             return Fetch(expression);
         }
-        public static Func<IQueryable<User>, IOrderedQueryable<User>> ProcessOrderFunc(OrderExpression orderDeserilizer = null)
+        public static Func<IQueryable<Bank>, IOrderedQueryable<Bank>> ProcessOrderFunc(OrderExpression orderDeserilizer = null)
         {
-            Func<IQueryable<User>, IOrderedQueryable<User>> orderFuction = (queryable) =>
+            Func<IQueryable<Bank>, IOrderedQueryable<Bank>> orderFuction = (queryable) =>
             {
                 var orderQueryable = queryable.OrderByDescending(x => x.Id).ThenBy(c => c.DateCreated);
                 if (orderDeserilizer != null)
@@ -115,27 +92,17 @@ namespace AcePacific.Data.Repositories
             };
             return orderFuction;
         }
-        public class CustomerQueryObject : QueryObject<User>
+        public class BankQueryObject : QueryObject<Bank>
         {
-            public CustomerQueryObject(CustomerFilter filter)
+            public BankQueryObject(BankFilter filter)
             {
                 if (filter != null)
                 {
 
-                    if (!string.IsNullOrEmpty(filter.PhoneNumber))
-                        And(c => c.PhoneNumber.Contains(filter.PhoneNumber));
-                    if (!string.IsNullOrEmpty(filter.UserName))
-                        And(c => c.UserName.ToLower().Contains(filter.UserName.ToLower()));
-                    if (!string.IsNullOrEmpty(filter.Name))
-                        And(c => c.FirstName.ToLower().Contains(filter.Name.ToLower()) || c.LastName.ToLower().Contains(filter.Name.ToLower()));
-                    if (!string.IsNullOrEmpty(filter.FirstName))
-                    {
-                        And(c => c.FirstName.ToLower().Contains(filter.FirstName.ToLower()));
-                    }
-                    if (!string.IsNullOrEmpty(filter.LastName))
-                        And(c => c.LastName.ToLower().Contains(filter.LastName.ToLower()));
-                    if (!string.IsNullOrEmpty(filter.Email))
-                        And(c => c.Email.ToLower().Contains(filter.Email.ToLower()));
+                    if (!string.IsNullOrEmpty(filter.BankName))
+                        And(c => c.BankName.Contains(filter.BankName));
+                    if (!string.IsNullOrEmpty(filter.BankCode))
+                        And(c => c.BankCode.ToLower().Contains(filter.BankCode.ToLower()));
                     if (filter.DateCreatedFrom.HasValue)
                         And(c => c.DateCreated >= filter.DateCreatedFrom);
                     if (filter.DateCreatedTo.HasValue)

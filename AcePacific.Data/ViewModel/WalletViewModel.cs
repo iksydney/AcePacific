@@ -1,9 +1,4 @@
 ﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AcePacific.Data.ViewModel
 {
@@ -37,5 +32,31 @@ namespace AcePacific.Data.ViewModel
     {
         public string UserId { get; set; }
         public string WalletAccountNumber { get; set; }
+        public decimal? WalletBalance { get; set; }
+    }
+    public class IntraTransferItem
+    {
+        public string TransactionStatus { get; set; }
+    }
+    public class IntraTransferDto
+    {
+        public decimal Amount { get; set;}
+        public string? RecipientWalletAccountNumber { get; set; }
+        public string? SenderWalletAccountNumber { get; set; }
+        public string TransactionNarration { get; set; }
+        public string TransactionPin { get; set; }
+    }
+    public class GetWalletResponse
+    {
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string AccountNumber { get; set; }
+        public decimal AccountBalance { get; set;}
+        public string Pin { get; set;}
+    }
+    public class UpdatePinModel
+    {
+        public string Pin { get; set; }
+        public string UserId { get; set; }
     }
 }
