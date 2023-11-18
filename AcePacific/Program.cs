@@ -42,7 +42,7 @@ namespace AcePacific
             {
                 opt.AddPolicy("CorsPolicy", opt =>
                 {
-                    opt.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin();
+                    opt.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin().WithOrigins("http://localhost:3000");
                 });
             });
             services.AddSingleton(config.GetSection("AppSettings").Get<AppSettings>());
