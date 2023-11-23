@@ -55,6 +55,19 @@ namespace AcePacific.API.Controllers
                 return BadRequest(ex.Message);
             }
         }
+        [HttpPost("MakeInterTransfer")]
+        public async Task<ActionResult<Response<string>>> MakeInterTransfer(InterTransferDto model)
+        {
+            try
+            {
+                var response = await _walletSevice.InterTransfer(model);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
         [HttpPost("UpdatePin")]
         public async Task<ActionResult<Response<string>>> UpdatePin(UpdatePinModel model)
         {

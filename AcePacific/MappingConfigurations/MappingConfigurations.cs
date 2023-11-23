@@ -2,6 +2,7 @@
 using AcePacific.Data.Entities;
 using AcePacific.Data.ViewModel;
 using AutoMapper;
+using static AcePacific.Data.ViewModel.BankFilter;
 
 namespace AcePacific.API.MappingConfigurations
 {
@@ -18,6 +19,8 @@ namespace AcePacific.API.MappingConfigurations
             CreateMap<GetWalletResponse, Wallet>().ReverseMap();
             CreateMap<TransactionLog, TransactionLogItem>().ReverseMap();
             CreateMap<Wallet, WalletItem>().ReverseMap();
+            CreateMap<Bank, BankModel>().ReverseMap();
+            CreateMap<Bank, CreateBank>().ReverseMap();
             /*CreateMap<Response<string>, User>()
                 .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Result))
                 .ForMember(dest => dest.ProfilePicture, opt => opt.Ignore());*/
