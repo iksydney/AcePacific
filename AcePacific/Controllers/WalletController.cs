@@ -68,37 +68,34 @@ namespace AcePacific.API.Controllers
                 return BadRequest(ex.Message);
             }
         }
-        /*[HttpGet("getpaged/{page:int:min(1)}/{pagesize:int:min(1)}/{whereCondition}")]
+        [HttpGet("getpaged/{page:int:min(1)}/{pagesize:int:min(1)}/{whereCondition}")]
         public async Task<ActionResult<Response<CountModel<WalletItem>>>> GetCount(int page, int pagesize, string whereCondition)
         {
             try
             {
                 var filter = WalletFilter.Deserialize(whereCondition);
-                var response = await _service.GetCount(user.UserId, page, pagesize, filter);
+                var response = await _walletSevice.GetCount(page, pagesize, filter);
                 return Ok(response);
             }
             catch (Exception ec)
             {
-                return BadRequest(Response<CountModel<MerchantUserModel>>.Failed(ErrorMessages.Generic_Error + " : " + ec.Message));
+                return BadRequest(Response<CountModel<WalletItem>>.Failed(ErrorMessages.GenericError + " : " + ec.Message));
             }
         }
 
         [HttpGet("querypaged/{page:int:min(1)}/{pagesize:int:min(1)}/{whereCondition}")]
-        [RequiresPermission(name: ModulePermissions.VIEWADMINUSERS, description: "View Admin Users")]
-        public async Task<ActionResult<Response<IEnumerable<MerchantUserModel>>>> GetQuery(int page, int pagesize, string whereCondition)
+        public async Task<ActionResult<Response<IEnumerable<WalletItem>>>> GetQuery(int page, int pagesize, string whereCondition)
         {
             try
             {
-                var user = GetUserProfile();
-                if (user == null) return Response<IEnumerable<MerchantUserModel>>.Failed("Unauthorized", ApiResponseCodeEnum.Unauthorized);
-                var filter = MerchantUserFilter.Deserialize(whereCondition);
-                var response = await _service.GetQuery(user.UserId, page, pagesize, filter);
+                var filter = WalletFilter.Deserialize(whereCondition);
+                var response = await _walletSevice.Query(page, pagesize, filter);
                 return Ok(response);
             }
             catch (Exception ec)
             {
-                return BadRequest(Response<IEnumerable<MerchantUserModel>>.Failed(ErrorMessages.Generic_Error + " : " + ec.Message));
+                return BadRequest(Response<IEnumerable<WalletItem>>.Failed(ErrorMessages.GenericError + " : " + ec.Message));
             }
-        }*/
+        }
     }
 }

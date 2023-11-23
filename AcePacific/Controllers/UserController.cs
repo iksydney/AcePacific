@@ -1,5 +1,6 @@
 ﻿using AcePacific.API.ExtensionServices;
 using AcePacific.Busines.Services;
+using AcePacific.Common.Constants;
 using AcePacific.Common.Contract;
 using AcePacific.Data.Entities;
 using AcePacific.Data.ViewModel;
@@ -60,10 +61,38 @@ namespace AcePacific.API.Controllers
                 return BadRequest(ex.Message);
             }
         }
+        [HttpPost("UpdateProfilePicture")]
+        public async Task<ActionResult<Response<string>>> UpdateProfileImage(string userId, IFormFile imageFile)
+        {
+            try
+            {
+                var response = await _userService.UploadUserImage(userId, imageFile);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+        [HttpGet("GetUserById")]
+        public async Task<ActionResult<Response<CustomerModel>>> GetUserById(string userId)
+        {
+            try
+            {
+                var response = await _userService.GetUserById(userId);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
         [HttpGet("GetCurrentUser")]
         public async Task<ActionResult<LoginItem>> GetCurrentUser()
         {
             var user = await _userManager.FindByEMailFromClaimPrincipal(User);
+            if(user == null)
+                return NotFound("Current User not found");
             return new LoginItem
             {
                 Email = user.Email,
@@ -71,6 +100,36 @@ namespace AcePacific.API.Controllers
                 Token = _tokenService.CreateToken(user)
             };
         }
+        [HttpGet("getpaged/{page:int:min(1)}/{pagesize:int:min(1)}/{whereCondition}")]
+        public async Task<ActionResult<Response<CountModel<CustomerItem>>>> Count(int page = 1, int pagesize = 10, string whereCondition = "{}")
+        {
+            try
+            {
+                var filter = CustomerFilter.Deserialize(whereCondition);
+                var response = await _userService.Count(page, pagesize, filter);
 
+                return Ok(response);
+            }
+            catch (Exception)
+            {
+                return BadRequest(Response<CountModel<CustomerItem>>.Failed(ErrorMessages.GenericError));
+            }
+
+        }
+        [HttpGet("querypaged/{page:int:min(1)}/{pagesize:int:min(1)}/{whereCondition}")]
+        public async Task<ActionResult<Response<IEnumerable<CustomerItem>>>> Query(int page = 1, int pagesize = 10, string whereCondition = "{}")
+        {
+            try
+            {
+                var filter = CustomerFilter.Deserialize(whereCondition);
+                var response = await _userService.Query(page, pagesize, filter);
+
+                return Ok(response);
+            }
+            catch (Exception)
+            {
+                return BadRequest(Response<IEnumerable<CustomerItem>>.Failed(ErrorMessages.GenericError));
+            }
+        }
     }
 }

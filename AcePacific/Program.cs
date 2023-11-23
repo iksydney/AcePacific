@@ -40,9 +40,12 @@ namespace AcePacific
             services.SwaggerExtension();
             services.AddCors(opt =>
             {
-                opt.AddPolicy("CorsPolicy", opt =>
+                opt.AddPolicy("CorsPolicy", builder =>
                 {
-                    opt.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin().WithOrigins("http://localhost:3000");
+                    builder.AllowAnyHeader()
+                           .AllowAnyMethod()
+                           .AllowCredentials()
+                           .WithOrigins("http://localhost:3000", "https://ace-pacific.vercel.app");
                 });
             });
             services.AddSingleton(config.GetSection("AppSettings").Get<AppSettings>());
