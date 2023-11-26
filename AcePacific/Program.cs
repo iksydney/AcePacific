@@ -42,10 +42,11 @@ namespace AcePacific
             {
                 opt.AddPolicy("CorsPolicy", builder =>
                 {
-                    builder.AllowAnyHeader()
+                    builder.AllowAnyOrigin()
                            .AllowAnyMethod()
-                           .AllowCredentials()
-                           .WithOrigins("http://localhost:3000", "https://ace-pacific.vercel.app");
+                           .AllowAnyHeader();
+                    //.AllowCredentials()
+                    //.WithOrigins("http://localhost:3000", "https://ace-pacific.vercel.app");
                 });
             });
             services.AddSingleton(config.GetSection("AppSettings").Get<AppSettings>());
@@ -59,7 +60,7 @@ namespace AcePacific
 
             var app = builder.Build();
 
-            if(app.Environment.IsDevelopment())
+            if (app.Environment.IsDevelopment())
             {
                 app.SwaggerDocumentation();
             }

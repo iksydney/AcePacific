@@ -39,5 +39,17 @@ namespace AcePacific.API.Controllers
                 return BadRequest(ex);
             }
         }
+        [HttpGet("BankList")]
+        public async Task<ActionResult<Response<IEnumerable<BankModel>>>> GetBankList()
+        {
+            try
+            {
+                var response = await _bankService.BankList();
+                return Ok(response);
+            }catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
+        }
     }
 }
