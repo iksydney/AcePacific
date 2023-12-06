@@ -1,7 +1,4 @@
-﻿using AcePacific.Common.Constants;
-using AcePacific.Common.Enums;
-using Newtonsoft.Json;
-using System.ComponentModel;
+﻿using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
 
 namespace AcePacific.Data.ViewModel
@@ -14,7 +11,7 @@ namespace AcePacific.Data.ViewModel
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public bool IsActive { get; set; }
-        public string ProfilePictureUrl { get; set; }
+        public byte[]? ProfilePicture { get; set; }
         public string CreatedBy { get; set; }
         public string LastUpdatedBy { get; set; }
         public string HouseNumber { get; set; }
@@ -29,6 +26,7 @@ namespace AcePacific.Data.ViewModel
         public string PhoneNumber { get; set; }
         public string UserName { get; set; }
         public string Email { get; set; }
+        public string UserInitials { get; set; }
     }
     public class CustomerItem : CustomerModel
     {
@@ -84,7 +82,14 @@ namespace AcePacific.Data.ViewModel
     {
         public string Email { get; set; }
         public string UserName { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string PhoneNumber { get; set; }
+        public string Id { get; set; }
+        public string AccountNumber { get; set; }
+        public byte[]? ProfilePicture { get; set; }
         public string Token { get; set; }
+        public string Initial { get; set; }
     }
     public class LoginDto
     {

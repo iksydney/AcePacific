@@ -12,10 +12,13 @@ namespace AcePacific.Busines.Services
 {
     public interface IWalletService
     {
+        Task<Response<CountModel<WalletItem>>> GetCount(int page, int pagesize, WalletFilter filter = null);
+        Task<IEnumerable<WalletItem>> Query(int page, int pagesize, WalletFilter filter);
         Task<Response<GetWalletResponse>> GetWallet(string accountNumber);
         Task<Response<GetWalletResponse>> GetWalletAdmin(string accountNumber);
         Task<Response<string>> IntraTransfer(IntraTransferDto model);
         Task<Response<string>> UpdatePin(UpdatePinModel model);
+        Task<Response<string>> InterTransfer(InterTransferDto model);
     }
     public class WalletService : IWalletService
     {
@@ -77,6 +80,74 @@ namespace AcePacific.Busines.Services
                 await _walletRepository.UpdateAsync(senderDetails);
                 
                 accountDetails.WalletBalance += model.Amount;
+                await _walletRepository.UpdateAsync(accountDetails);
+
+                response = Response<string>.Success("Transfer completed Successfully");
+            }
+            catch (Exception ex)
+            {
+                response = Response<string>.Failed(ex.Message);
+            }
+            return await Task.FromResult(response);
+        }
+        public async Task<Response<string>> InterTransfer(InterTransferDto model)
+        {
+            var response = Response<string>.Failed(string.Empty);
+            try
+            {
+                var accountDetails = _walletRepository.GetWalletByAccountNumber("0684109312");
+                var senderDetails = _walletRepository.GetWalletByAccountNumber(model.SenderAccountNumber);
+                if (senderDetails == null || accountDetails == null)
+                    return Response<string>.Failed("details not correctly inputted");
+
+                if (senderDetails.Pin == null)
+                    return Response<string>.Failed(ErrorMessages.PinNotSetup);
+
+                if(senderDetails.WalletAccountNumber == model.AccountNumber)
+                    return Response<string>.Failed("Hmmm!!! You cannot make transfers to same account number 😊");
+
+                if (senderDetails.WalletBalance <= model.TransactionAmount)
+                    return Response<string>.Failed(ErrorMessages.BalanceIsLow);
+
+                var balanceValidation = ValidateAmount(senderDetails.WalletBalance, model.TransactionAmount);
+                if (string.IsNullOrEmpty(balanceValidation)) return Response<string>.Failed(ErrorMessages.FailedToValidateBalance);
+
+                if (balanceValidation != ResponseMessage.ValidationSuccessfulTransferCanProceed)
+                    return Response<string>.Failed("Please contact Administrator");
+
+                var comparedPin = CompareHashedStrings(model.TransactionPin, senderDetails.Pin);
+                if (!comparedPin.Result.Equals("Pin Verified"))
+
+                    return Response<string>.Failed(ErrorMessages.IncorrectPin);
+
+                var amountChanged = senderDetails.WalletBalance;
+
+
+                senderDetails.WalletBalance -= model.TransactionAmount;
+
+                var transactionReference = Helper.GenerateTransactionReference();
+
+                var transactionLog = new TransactionLogItem
+                {
+                    DateCreated = DateTime.UtcNow,
+                    Reference = transactionReference,
+                    RecipientAccountName = model.AccountName,
+                    SenderAccountName = senderDetails.WalletAccountNumber,
+                    TransactionNarration = model.TransactionNarration,
+                    TransactionType = TransactionType.ExternalTransaction,
+                    PostalCode = model.PostalCode,
+                    SenderAddress = model.SenderAddress,
+                    RoutingNumber = model.RoutingNumber,
+                    SwiftCode = model.SwiftCode,
+                    BankName = model.BankName
+                    
+                };
+                var mappedTransactionLog = _mapper.Map<TransactionLog>(transactionLog);
+                await _transactionLogRepository.InsertAsync(mappedTransactionLog);
+
+                await _walletRepository.UpdateAsync(senderDetails);
+                
+                accountDetails.WalletBalance += model.TransactionAmount;
                 await _walletRepository.UpdateAsync(accountDetails);
 
                 response = Response<string>.Success("Transfer completed Successfully");
@@ -186,6 +257,47 @@ namespace AcePacific.Busines.Services
                 return await Task.FromResult("Pin Verified");
             }
 
+        }
+        public async Task<Response<CountModel<WalletItem>>> GetCount(int page, int pagesize, WalletFilter filter = null)
+        {
+            ProcessFilter(filter);
+            int totalCount;
+            var orderBy = OrderExpression.Deserilizer("{}");
+            var entities = _walletRepository.GetWalletPaged(page, pagesize, out totalCount, filter, orderBy);
+
+            var response = Response<CountModel<WalletItem>>.Success(new CountModel<WalletItem>()
+            {
+                Total = totalCount,
+                Items = ProcessQuery(entities)
+            });
+            return await Task.FromResult(response);
+        }
+        public async Task<IEnumerable<WalletItem>> Query(int page, int pagesize, WalletFilter filter)
+        {
+            var orderBy = OrderExpression.Deserilizer("{}");
+            ProcessFilter(filter);
+            var entities = _walletRepository.GetWalletPaged(page, pagesize, filter, orderBy);
+            var response = ProcessQuery(entities);
+            return await Task.FromResult(response);
+        }
+        private void ProcessFilter(WalletFilter filter)
+        {
+            if (!string.IsNullOrEmpty(filter.UserId))
+            {
+                var wallet = _walletRepository.GetWalletByUserId(filter.UserId);
+                if (wallet != null)
+                {
+                    filter.UserId = wallet.UserId;
+                }
+            }
+        }
+        private IEnumerable<WalletItem> ProcessQuery(IEnumerable<Wallet> entities)
+        {
+            return entities.ToList().Select(c =>
+            {
+                var item = _mapper.Map<Wallet, WalletItem>(c);
+                return item;
+            });
         }
     }
 }

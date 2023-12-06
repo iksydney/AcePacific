@@ -19,7 +19,10 @@ namespace AcePacific.Data.Entities
         public string? TransactionNarration { get; set; }
         public string? TransactionAmount { get; set; }
         public string? RecipientAddress { get; set; }
+        public string? SenderAddress { get; set; }
+        public string? PostalCode { get; set; }
         public string? SwiftCode { get; set; }
+        public string? RoutingNumber { get; set; }
         public string? IBANNumber { get; set; }
         public DateTime? DateCreated { get; set; }
         public DateTime? DateUpdated { get; set; }

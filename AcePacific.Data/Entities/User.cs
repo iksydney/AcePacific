@@ -17,6 +17,7 @@ namespace AcePacific.Data.Entities
         public UserType UserType { get; set; } = UserType.User;
         public bool IsActive { get; set; }
         public string? ProfilePictureUrl { get; set; }
+        public byte[]? ProfilePicture { get; set; }
         public string CreatedBy
         {
             get

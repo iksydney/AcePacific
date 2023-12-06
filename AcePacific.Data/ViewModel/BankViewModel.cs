@@ -6,13 +6,11 @@ using System.ComponentModel.DataAnnotations;
 
 namespace AcePacific.Data.ViewModel
 {
-    internal class CustomerViewModel
-    {
-    }
     public class BankModel
     {
         public string BankName { get; set; }
         public string BankCode { get; set; }
+        public string ImageUrl { get; set; }
     }
     public class BankItem : BankModel
     {
@@ -35,6 +33,13 @@ namespace AcePacific.Data.ViewModel
                 filter = JsonConvert.DeserializeObject<BankFilter>(whereCondition);
             }
             return filter;
+        }
+        public class CreateBank
+        {
+            public string BankName { get; set; }
+            public string BankCode { get; set; }
+            public string ImageUrl { get; set; }
+            public string? CreatedBy { get; set; }
         }
     }
 }

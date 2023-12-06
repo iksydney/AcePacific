@@ -7,6 +7,7 @@ namespace AcePacific.Data.ViewModel
         public decimal WalletBalance { get; set; }
         public string UserId { get; set; }
         public string TransactionReference { get; set; }
+        public string WalletAccountNumber { get; set; }
     }   
     public class WalletItem : WalletViewModel
     {
@@ -44,6 +45,20 @@ namespace AcePacific.Data.ViewModel
         public string? RecipientWalletAccountNumber { get; set; }
         public string? SenderWalletAccountNumber { get; set; }
         public string TransactionNarration { get; set; }
+        public string TransactionPin { get; set; }
+    }
+    public class InterTransferDto
+    {
+        public string AccountName { get; set; }
+        public string AccountNumber { get; set; }
+        public string SenderAccountNumber { get; set; }
+        public string BankName { get; set; }
+        public string SwiftCode { get; set; }
+        public string RoutingNumber { get; set; }
+        public decimal TransactionAmount { get; set;}
+        public string TransactionNarration { get; set; }
+        public string? SenderAddress { get; set; }
+        public string? PostalCode { get; set; }
         public string TransactionPin { get; set; }
     }
     public class GetWalletResponse

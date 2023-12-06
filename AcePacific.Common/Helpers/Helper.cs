@@ -30,6 +30,12 @@ namespace AcePacific.Common.Helpers
             HashTool.Clear();
             return Convert.ToBase64String(EncryptedBytes);
         }
+        public static string ComputeInitials(string firstName, string lastName)
+        {
+            var firstNameInitial = firstName.Substring(0, 1).ToUpper();
+            var lastNameInitial = lastName.Substring(0, 1).ToUpper();
+            return firstNameInitial + lastNameInitial;
+        }
         public static decimal ComputeCharge(decimal amount)
         {
             var chargeAmount = 0m;
