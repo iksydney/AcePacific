@@ -3,13 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.6.33829.357
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AcePacific.API", "AcePacific.API.csproj", "{93BF2558-B4A8-41DD-80F1-E1C982A036E6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AcePacific.API", "AcePacific\AcePacific.API.csproj", "{93BF2558-B4A8-41DD-80F1-E1C982A036E6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AcePacific.Busines", "..\AcePacific.Busines\AcePacific.Busines.csproj", "{DD321DAA-C5D8-492C-BF16-5D5E99B95D4E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AcePacific.Busines", "AcePacific.Busines\AcePacific.Busines.csproj", "{DD321DAA-C5D8-492C-BF16-5D5E99B95D4E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AcePacific.Common", "..\AcePacific.Common\AcePacific.Common.csproj", "{37CDD0EE-22EB-4A78-96FE-DAF3F308701F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AcePacific.Common", "AcePacific.Common\AcePacific.Common.csproj", "{37CDD0EE-22EB-4A78-96FE-DAF3F308701F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AcePacific.Data", "..\AcePacific.Data\AcePacific.Data.csproj", "{116B1F32-061F-45EA-AE25-A56F483FAC77}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AcePacific.Data", "AcePacific.Data\AcePacific.Data.csproj", "{116B1F32-061F-45EA-AE25-A56F483FAC77}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

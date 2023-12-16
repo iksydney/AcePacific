@@ -60,10 +60,12 @@ namespace AcePacific
 
             var app = builder.Build();
 
-            if (app.Environment.IsDevelopment())
+            /*if (app.Environment.IsDevelopment())
             {
                 app.SwaggerDocumentation();
-            }
+            }*/
+
+                app.SwaggerDocumentation();
             // Configure the HTTP request pipeline.
 
             app.UseHttpsRedirection();
