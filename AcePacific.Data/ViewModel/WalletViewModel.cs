@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System.ComponentModel.DataAnnotations;
 
 namespace AcePacific.Data.ViewModel
 {
@@ -42,7 +43,9 @@ namespace AcePacific.Data.ViewModel
     public class IntraTransferDto
     {
         public decimal Amount { get; set;}
+        [Required(ErrorMessage ="Please provide a Recipient wallet account number")]
         public string? RecipientWalletAccountNumber { get; set; }
+        [Required(ErrorMessage = "Some needed parameters are missing")]
         public string? SenderWalletAccountNumber { get; set; }
         public string TransactionNarration { get; set; }
         public string TransactionPin { get; set; }
@@ -59,7 +62,7 @@ namespace AcePacific.Data.ViewModel
         public string TransactionNarration { get; set; }
         public string? SenderAddress { get; set; }
         public string? PostalCode { get; set; }
-        public string TransactionPin { get; set; }
+        public string TransactionPin { get; set; }    
     }
     public class GetWalletResponse
     {
@@ -71,7 +74,15 @@ namespace AcePacific.Data.ViewModel
     }
     public class UpdatePinModel
     {
+        public string OldPin { get; set; }
+        public string NewPin { get; set; }
+        public string UserId { get; set; }
+    }
+
+    public class ValidatePinModel
+    {
         public string Pin { get; set; }
+        [Required(ErrorMessage ="User Id required")]
         public string UserId { get; set; }
     }
 }

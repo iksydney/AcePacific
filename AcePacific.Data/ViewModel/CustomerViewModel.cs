@@ -100,4 +100,29 @@ namespace AcePacific.Data.ViewModel
     {
         public string Email { get; set; }
     }
+    public class UpdateUserView
+    {
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string Email { get; set; }
+        public string PhoneNumber { get; set; }
+    }
+
+    public class UpdateUserModel
+    {
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        [EmailAddress]
+        public string Email { get; set; }
+        public string PhoneNumber { get; set; }
+        public string UserName { get; set; }
+        public string Gender { get; set; }
+        public string? HouseNumber { get; set; }
+        public string? Street { get; set; }
+        public string? LandMark { get; set; }
+        public string? AddressLine1 { get; set; }
+        public string? Country { get; set; }
+        public string? City { get; set; }
+        public string? AddressLine2 { get; set; }
+    }
 }

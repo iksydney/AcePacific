@@ -131,5 +131,18 @@ namespace AcePacific.API.Controllers
                 return BadRequest(Response<IEnumerable<CustomerItem>>.Failed(ErrorMessages.GenericError));
             }
         }
+
+        [HttpPut("UpdateUser")]
+        public async Task<ActionResult<Response<UpdateUserView>>> UpdateUser(string id, UpdateUserModel model)
+        {
+            try
+            {
+                var result = await _userService.UpdateUser(id, model);
+                return Ok(result);
+            }catch(Exception ex)
+            {
+                return BadRequest(Response<IEnumerable<CustomerItem>>.Failed(ErrorMessages.GenericError));
+            }
+        }
     }
 }

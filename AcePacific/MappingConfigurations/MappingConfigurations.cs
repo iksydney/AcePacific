@@ -21,6 +21,9 @@ namespace AcePacific.API.MappingConfigurations
             CreateMap<Wallet, WalletItem>().ReverseMap();
             CreateMap<Bank, BankModel>().ReverseMap();
             CreateMap<Bank, CreateBank>().ReverseMap();
+            
+            
+            CreateMap<UpdateUserView, User>().ReverseMap();
             /*CreateMap<Response<string>, User>()
                 .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Result))
                 .ForMember(dest => dest.ProfilePicture, opt => opt.Ignore());*/

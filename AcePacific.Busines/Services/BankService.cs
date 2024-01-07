@@ -42,13 +42,13 @@ namespace AcePacific.Busines.Services
                     mappedBank.DateCreated = DateTime.Now;
                     mappedBank.IsActive = true;
 
-                    // Insert the new bank into the repository
                     await _bankRepository.InsertAsync(mappedBank);
 
                     response = Response<BankModel>.Success(new BankModel
                     {
                         BankCode = model.BankCode,
                         BankName = model.BankName,
+                        ImageUrl = model.ImageUrl,
                         // Add other properties if needed
                     });
                 }

@@ -1,0 +1,8 @@
+version: '3.4'
+
+services:
+  acepacific.api:
+    image: ${DOCKER_REGISTRY-}acepacificapi
+    build:
+      context: .
+      dockerfile: AcePacific/Dockerfile

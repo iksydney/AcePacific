@@ -8,6 +8,7 @@ using AcePacific.Data.ViewModel;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace AcePacific.Busines.Services
 {
@@ -19,6 +20,7 @@ namespace AcePacific.Busines.Services
         Task<Response<LoginItem>> Login(LoginDto model);
         Task<Response<IEnumerable<CustomerItem>>> Query(int page, int pagesize, CustomerFilter filter);
         Task<Response<CustomerViewItem>> RegisterUser(RegisterUserModel model);
+        Task<Response<UpdateUserView>> UpdateUser(string id, UpdateUserModel model);
         Task<Response<string>> UploadUserImage(string userId, IFormFile imageFile);
     }
     public class UserService : IUserService
@@ -159,6 +161,7 @@ namespace AcePacific.Busines.Services
                 mappedUser.AccountNumber = userAccountNumber;
                 mappedUser.IsActive = true;
                 mappedUser.IsTransactionPinSet = false;
+                mappedUser.UserType = Common.Enums.UserType.User;
 
                 var registeredUser = await _userManager.CreateAsync(mappedUser, model.Password);
                 var newWallet = new CreatWalletViewModel
@@ -194,6 +197,35 @@ namespace AcePacific.Busines.Services
                 response = Response<CustomerViewItem>.Failed(ex.Message);
             }
             return await Task.FromResult(response).ConfigureAwait(false);
+        }
+
+        public async Task<Response<UpdateUserView>> UpdateUser(string id, UpdateUserModel model)
+        {
+            var response = Response<UpdateUserView>.Failed(string.Empty);
+            var userView = new UpdateUserView();
+            try
+            {
+                var entityExists = await _userRepository.Table.FirstOrDefaultAsync(c => c.Id == id);
+                if (entityExists == null)
+                    return Response<UpdateUserView>.Failed(ErrorMessages.UserNotFound);
+
+                entityExists.LastUpdatedOn = DateTime.Now.ToUniversalTime();
+                entityExists.LastUpdatedBy = entityExists.FirstName;
+
+                if (await _userRepository.Table.AnyAsync(c => c.Id != id && c.UserName == model.UserName))
+                    return Response<UpdateUserView>.Failed(ErrorMessages.UserNameExists);
+
+                if (await _userRepository.Table.AnyAsync(c => c.Id != id && c.PhoneNumber == model.PhoneNumber))
+                    return Response<UpdateUserView>.Failed(ErrorMessages.phoneNumberExists);
+
+                await _userRepository.UpdateAsync(entityExists, true);
+                var mappedUser = _mapper.Map(entityExists, userView);
+                response = Response<UpdateUserView>.Success(mappedUser);
+            }catch(Exception ex)
+            {
+                response = Response<UpdateUserView>.Failed(ex.Message);
+            }
+            return await Task.FromResult(response);
         }
         public async Task<Response<IEnumerable<CustomerItem>>> Query(int page, int pagesize, CustomerFilter filter)
         {

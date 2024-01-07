@@ -32,6 +32,8 @@
         public static string PinNotSetup = "Pin Not Setup";
         public static string IncorrectPin = "Incorrect pin provided";
         public static string Unauthorized = "You are not authorized to view the resource";
+
+        public static string PinNotMatch = "Old Pin and New Pin Do not Match";
     }
 
 

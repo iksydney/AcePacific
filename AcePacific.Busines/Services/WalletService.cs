@@ -5,6 +5,7 @@ using AcePacific.Data.Entities;
 using AcePacific.Data.Repositories;
 using AcePacific.Data.ViewModel;
 using AutoMapper;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using System.Data.Entity;
 
@@ -17,8 +18,10 @@ namespace AcePacific.Busines.Services
         Task<Response<GetWalletResponse>> GetWallet(string accountNumber);
         Task<Response<GetWalletResponse>> GetWalletAdmin(string accountNumber);
         Task<Response<string>> IntraTransfer(IntraTransferDto model);
-        Task<Response<string>> UpdatePin(UpdatePinModel model);
+        Task<Response<string>> ResetPin(UpdatePinModel model);
         Task<Response<string>> InterTransfer(InterTransferDto model);
+        Task<Response<string>> ValidatePin(ValidatePinModel model);
+        Task<Response<string>> CreatePin(ValidatePinModel model);
     }
     public class WalletService : IWalletService
     {
@@ -26,12 +29,15 @@ namespace AcePacific.Busines.Services
         private readonly IUserRepository _userRepository;
         private readonly IMapper _mapper;
         private readonly ITransactionLogRepository _transactionLogRepository;
-        public WalletService(IWalletRepository walletRepository, IUserRepository userRepository, IMapper mapper, ITransactionLogRepository transactionLogRepository)
+        private readonly ILogger<WalletService> _logger;
+        public WalletService(IWalletRepository walletRepository, IUserRepository userRepository, IMapper mapper, ITransactionLogRepository transactionLogRepository,
+            ILogger<WalletService> logger)
         {
             _walletRepository = walletRepository;
             _userRepository = userRepository;
             _mapper = mapper;
             _transactionLogRepository = transactionLogRepository;
+            _logger = logger;
 
         }
         public async Task<Response<string>> IntraTransfer(IntraTransferDto model)
@@ -83,6 +89,28 @@ namespace AcePacific.Busines.Services
                 await _walletRepository.UpdateAsync(accountDetails);
 
                 response = Response<string>.Success("Transfer completed Successfully");
+            }
+            catch (Exception ex)
+            {
+                response = Response<string>.Failed(ex.Message);
+            }
+            return await Task.FromResult(response);
+        }
+        public async Task<Response<string>> ValidatePin(ValidatePinModel model)
+        {
+            var response = Response<string>.Failed(string.Empty);
+            try
+            {
+                if(string.IsNullOrEmpty( model.UserId))
+                    return Response<string>.Failed(ErrorMessages.UserNotFound);
+                var pinDetails = _walletRepository.Table.AsNoTracking().FirstOrDefault(c => c.UserId == model.UserId);
+                if (pinDetails.Pin == null)
+                    return Response<string>.Failed("You have not created a transaction Pin");
+                var comparedPin = CompareHashedStrings(model.Pin, pinDetails.Pin);
+                if (!comparedPin.Result.Equals("Pin Verified"))
+                    return Response<string>.Failed(ErrorMessages.IncorrectPin);
+
+                response = Response<string>.Success("Pin Verified");
             }
             catch (Exception ex)
             {
@@ -231,19 +259,41 @@ namespace AcePacific.Busines.Services
             }
             return await Task.FromResult(response).ConfigureAwait(false);
         }
-        public async Task<Response<string>> UpdatePin(UpdatePinModel model)
+        public async Task<Response<string>> ResetPin(UpdatePinModel model)
         {
             var walletDetails = _walletRepository.GetWalletByUserId(model.UserId);
             if (walletDetails == null)
                 return Response<string>.Failed(ErrorMessages.UserNotFound);
-            walletDetails.Pin = Helper.ComputeHash(model.Pin);
-            /*var walletModel = new UpdatePinModel
-            {
-                Pin = model.Pin
-            };
-            var mappedWallet = _mapper.Map<Wallet>(walletModel);*/
+            var hashedOldPin = Helper.ComputeHash(model.OldPin);
+            if (hashedOldPin != walletDetails.Pin)
+                return Response<string>.Failed(ErrorMessages.PinNotMatch);
+
+            var hashedNewPin = Helper.ComputeHash(model.NewPin);
+            walletDetails.Pin = hashedNewPin;
+
             _walletRepository.Update(walletDetails);
             return Response<string>.Success("Pin updated Successfully");
+        }
+
+        public async Task<Response<string>> CreatePin(ValidatePinModel model)
+        {
+            try
+            {
+                var walletDetails = _walletRepository.GetWalletByUserId(model.UserId);
+                if (walletDetails == null)
+                    return Response<string>.Failed(ErrorMessages.UserNotFound);
+                if (walletDetails.Pin != null) return Response<string>.Failed("Pin Already Exists");
+
+                walletDetails.Pin = Helper.ComputeHash(model.Pin);
+                _walletRepository.Update(walletDetails);
+
+                return Response<string>.Success("Pin Created Successfully");
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                throw new Exception(ex.Message);
+            }
         }
         private async Task<string> CompareHashedStrings(string sourcePin, string hashedPin)
         {

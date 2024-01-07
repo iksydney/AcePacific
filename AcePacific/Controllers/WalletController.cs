@@ -29,6 +29,20 @@ namespace AcePacific.API.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpPost("ValidatePin")]
+        public async Task<ActionResult<Response<string>>> ValidatePin(ValidatePinModel model)
+        {
+            try
+            {
+                var response = await _walletSevice.ValidatePin(model);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
         [HttpGet("GetUserAccount/{accountNumber}")]
         public async Task<ActionResult<Response<PhoneNumberExistsDto>>> GetUserAccount(string accountNumber)
         {
@@ -68,12 +82,26 @@ namespace AcePacific.API.Controllers
                 return BadRequest(ex.Message);
             }
         }
-        [HttpPost("UpdatePin")]
-        public async Task<ActionResult<Response<string>>> UpdatePin(UpdatePinModel model)
+        [HttpPut("ResetPin")]
+        public async Task<ActionResult<Response<string>>> ResetPin(UpdatePinModel model)
         {
             try
             {
-                var response = await _walletSevice.UpdatePin(model);
+                var response = await _walletSevice.ResetPin(model);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+        
+        [HttpPut("CreatePin")]
+        public async Task<ActionResult<Response<string>>> CreatePin(ValidatePinModel model)
+        {
+            try
+            {
+                var response = await _walletSevice.CreatePin(model);
                 return Ok(response);
             }
             catch (Exception ex)
