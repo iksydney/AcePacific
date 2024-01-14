@@ -6,7 +6,6 @@ using AcePacific.Data.Repositories;
 using AcePacific.Data.ViewModel;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
-using Microsoft.IdentityModel.Tokens;
 using System.Data.Entity;
 
 namespace AcePacific.Busines.Services
@@ -22,6 +21,8 @@ namespace AcePacific.Busines.Services
         Task<Response<string>> InterTransfer(InterTransferDto model);
         Task<Response<string>> ValidatePin(ValidatePinModel model);
         Task<Response<string>> CreatePin(ValidatePinModel model);
+        Task<Response<TransactionHistoryView>> GettransactionByReference(string reference);
+        Task<Response<IEnumerable<TransactionHistoryView>>> ViewUserTransactionHistory(string userId);
     }
     public class WalletService : IWalletService
     {
@@ -38,7 +39,6 @@ namespace AcePacific.Busines.Services
             _mapper = mapper;
             _transactionLogRepository = transactionLogRepository;
             _logger = logger;
-
         }
         public async Task<Response<string>> IntraTransfer(IntraTransferDto model)
         {
@@ -46,13 +46,15 @@ namespace AcePacific.Busines.Services
             try
             {
                 var accountDetails = _walletRepository.GetWalletByAccountNumber(model.RecipientWalletAccountNumber);
+                var recipientUserName = _userRepository.Table.AsNoTracking().FirstOrDefault(x => x.AccountNumber == model.RecipientWalletAccountNumber);
+                var senderUserName = _userRepository.Table.AsNoTracking().FirstOrDefault(x => x.AccountNumber == model.SenderWalletAccountNumber);
                 var senderDetails = _walletRepository.GetWalletByAccountNumber(model.SenderWalletAccountNumber);
 
                 if (accountDetails == null)
                     return Response<string>.Failed(ErrorMessages.AccountNumberDoesntExist);
                 if (senderDetails.Pin == null)
                     return Response<string>.Failed(ErrorMessages.PinNotSetup);
-                if(senderDetails.WalletAccountNumber == model.RecipientWalletAccountNumber)
+                if (senderDetails.WalletAccountNumber == model.RecipientWalletAccountNumber)
                     return Response<string>.Failed("Hmmm!!! You cannot make transfers to same account number 😊");
                 if (senderDetails.WalletBalance <= model.Amount)
                     return Response<string>.Failed(ErrorMessages.BalanceIsLow);
@@ -71,20 +73,23 @@ namespace AcePacific.Busines.Services
 
                 var transactionReference = Helper.GenerateTransactionReference();
 
-                var transactionLog = new TransactionLogItem
+                var transactionLog = new SaveTransactionLog
                 {
                     DateCreated = DateTime.UtcNow,
                     Reference = transactionReference,
-                    RecipientAccountName = accountDetails.WalletAccountNumber,
-                    SenderAccountName = senderDetails.WalletAccountNumber,
+                    UserId = senderDetails.UserId,
+                    RecipientAccountName = recipientUserName?.AccountName,
+                    SenderAccountName = senderUserName?.AccountName,
                     TransactionNarration = model.TransactionNarration,
-                    TransactionType = TransactionType.InternalTransaction
+                    TransactionType = TransactionType.InternalTransaction,
+                    TransactionAmount = model.Amount.ToString(),
+                    CreatedBy = senderUserName?.AccountName,
                 };
                 var mappedTransactionLog = _mapper.Map<TransactionLog>(transactionLog);
                 await _transactionLogRepository.InsertAsync(mappedTransactionLog);
 
                 await _walletRepository.UpdateAsync(senderDetails);
-                
+
                 accountDetails.WalletBalance += model.Amount;
                 await _walletRepository.UpdateAsync(accountDetails);
 
@@ -101,7 +106,7 @@ namespace AcePacific.Busines.Services
             var response = Response<string>.Failed(string.Empty);
             try
             {
-                if(string.IsNullOrEmpty( model.UserId))
+                if (string.IsNullOrEmpty(model.UserId))
                     return Response<string>.Failed(ErrorMessages.UserNotFound);
                 var pinDetails = _walletRepository.Table.AsNoTracking().FirstOrDefault(c => c.UserId == model.UserId);
                 if (pinDetails.Pin == null)
@@ -124,6 +129,7 @@ namespace AcePacific.Busines.Services
             try
             {
                 var accountDetails = _walletRepository.GetWalletByAccountNumber("0684109312");
+                var senderUserName = _userRepository.Table.AsNoTracking().FirstOrDefault(x => x.AccountNumber == model.SenderAccountNumber);
                 var senderDetails = _walletRepository.GetWalletByAccountNumber(model.SenderAccountNumber);
                 if (senderDetails == null || accountDetails == null)
                     return Response<string>.Failed("details not correctly inputted");
@@ -131,7 +137,7 @@ namespace AcePacific.Busines.Services
                 if (senderDetails.Pin == null)
                     return Response<string>.Failed(ErrorMessages.PinNotSetup);
 
-                if(senderDetails.WalletAccountNumber == model.AccountNumber)
+                if (senderDetails.WalletAccountNumber == model.AccountNumber)
                     return Response<string>.Failed("Hmmm!!! You cannot make transfers to same account number 😊");
 
                 if (senderDetails.WalletBalance <= model.TransactionAmount)
@@ -155,12 +161,15 @@ namespace AcePacific.Busines.Services
 
                 var transactionReference = Helper.GenerateTransactionReference();
 
-                var transactionLog = new TransactionLogItem
+                var transactionLog = new SaveTransactionLog
                 {
                     DateCreated = DateTime.UtcNow,
                     Reference = transactionReference,
+                    UserId = senderDetails.UserId,
+                    SenderAccountName = senderUserName?.AccountName,
+                    TransactionAmount = model.TransactionAmount.ToString(),
+                    CreatedBy = senderUserName?.AccountName,
                     RecipientAccountName = model.AccountName,
-                    SenderAccountName = senderDetails.WalletAccountNumber,
                     TransactionNarration = model.TransactionNarration,
                     TransactionType = TransactionType.ExternalTransaction,
                     PostalCode = model.PostalCode,
@@ -168,14 +177,14 @@ namespace AcePacific.Busines.Services
                     RoutingNumber = model.RoutingNumber,
                     SwiftCode = model.SwiftCode,
                     BankName = model.BankName
-                    
                 };
                 var mappedTransactionLog = _mapper.Map<TransactionLog>(transactionLog);
                 await _transactionLogRepository.InsertAsync(mappedTransactionLog);
 
                 await _walletRepository.UpdateAsync(senderDetails);
-                
+
                 accountDetails.WalletBalance += model.TransactionAmount;
+
                 await _walletRepository.UpdateAsync(accountDetails);
 
                 response = Response<string>.Success("Transfer completed Successfully");
@@ -183,6 +192,45 @@ namespace AcePacific.Busines.Services
             catch (Exception ex)
             {
                 response = Response<string>.Failed(ex.Message);
+            }
+            return await Task.FromResult(response);
+        }
+
+        public async Task<Response<IEnumerable<TransactionHistoryView>>> ViewUserTransactionHistory(string userId)
+        {
+            var response = Response<IEnumerable<TransactionHistoryView>>.Failed(string.Empty);
+            try
+            {
+                var today = DateTime.UtcNow;
+                var twoWeeksAgo = today.AddDays(-14);
+                var entity = _transactionLogRepository.Table.Where(x => x.UserId == userId && x.DateCreated >= twoWeeksAgo && x.DateCreated < today).OrderByDescending(x => x.DateCreated).ToList();
+                
+                var mappedEntity = _mapper.Map<IEnumerable<TransactionHistoryView>>(entity);
+
+                response = Response<IEnumerable<TransactionHistoryView>>.Success(mappedEntity);
+
+            }catch(Exception ex)
+            {
+                response = Response<IEnumerable<TransactionHistoryView>>.Failed(ex.Message);
+                _logger.LogError(ex.Message);
+            }
+            return await Task.FromResult(response).ConfigureAwait(false);
+        }
+
+        public async Task<Response<TransactionHistoryView>> GettransactionByReference(string reference)
+        {
+            var response = Response<TransactionHistoryView>.Failed(string.Empty);
+            try
+            {
+                var entity = _transactionLogRepository.Table.AsNoTracking().FirstOrDefault(x => x.Reference == reference);
+
+                var mappedEntity = _mapper.Map<TransactionHistoryView>(entity);
+
+                response = Response<TransactionHistoryView>.Success(mappedEntity);
+            }catch(Exception ex)
+            {
+                response = Response<TransactionHistoryView>.Failed(ex.Message);
+                _logger.LogError(ex.Message);
             }
             return await Task.FromResult(response);
         }

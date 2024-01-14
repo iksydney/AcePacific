@@ -1,5 +1,4 @@
-﻿using AcePacific.Common.Contract;
-using AcePacific.Data.Entities;
+﻿using AcePacific.Data.Entities;
 using AcePacific.Data.ViewModel;
 using AutoMapper;
 using static AcePacific.Data.ViewModel.BankFilter;
@@ -24,6 +23,8 @@ namespace AcePacific.API.MappingConfigurations
             
             
             CreateMap<UpdateUserView, User>().ReverseMap();
+            CreateMap<SaveTransactionLog, TransactionLog>().ReverseMap();
+            CreateMap<TransactionHistoryView, TransactionLog>().ReverseMap();
             /*CreateMap<Response<string>, User>()
                 .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Result))
                 .ForMember(dest => dest.ProfilePicture, opt => opt.Ignore());*/

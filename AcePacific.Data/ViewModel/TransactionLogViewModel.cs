@@ -47,4 +47,28 @@ namespace AcePacific.Data.ViewModel
             return filter;
         }
     }
+
+    public class SaveTransactionLog
+    {
+        public string? Reference { get; set; }
+        public string? AccountName { get; set; }
+        public string? AccountNumber { get; set; }
+        public string? BankName { get; set; }
+        public string? BankImageUrl { get; set; }
+        public string? UserId { get; set; }
+        public string? CreatedBy { get; set; }
+        public string? Sender { get; set; }
+        public decimal? Charge { get; set; }
+        public string? PhoneNumber { get; set; }
+        public string? RecipientAccountName { get; set; }
+        public string? SenderAccountName { get; set; }
+        public string? TransactionNarration { get; set; }
+        public string? SwiftCode { get; set; }
+        public string? RoutingNumber { get; set; }
+        public string? SenderAddress { get; set; }
+        public string? PostalCode { get; set; }
+        public TransactionType? TransactionType { get; set; }
+        public DateTime? DateCreated { get; set; }
+        public string? TransactionAmount { get; set; }
+    }
 }

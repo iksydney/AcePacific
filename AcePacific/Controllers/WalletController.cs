@@ -138,5 +138,32 @@ namespace AcePacific.API.Controllers
                 return BadRequest(Response<IEnumerable<WalletItem>>.Failed(ErrorMessages.GenericError + " : " + ec.Message));
             }
         }
+
+        [HttpGet("ViewUserTransactionHistory")]
+        public async Task<ActionResult<Response<IEnumerable<TransactionHistoryView>>>> ViewUserTransactionHistory(string userId)
+        {
+            try
+            {
+                var response = await _walletSevice.ViewUserTransactionHistory(userId);
+                return Ok(response);
+            }
+            catch(Exception e)
+            {
+                return BadRequest();
+            }
+        }
+        [HttpGet("GettransactionByReference")]
+        public async Task<ActionResult<Response<IEnumerable<TransactionHistoryView>>>> GettransactionByReference(string reference)
+        {
+            try
+            {
+                var response = await _walletSevice.GettransactionByReference(reference);
+                return Ok(response);
+            }
+            catch(Exception e)
+            {
+                return BadRequest();
+            }
+        }
     }
 }

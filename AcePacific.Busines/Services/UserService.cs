@@ -89,7 +89,8 @@ namespace AcePacific.Busines.Services
                     AccountNumber = user.AccountNumber,
                     ProfilePicture = user.ProfilePicture,
                     Initial = Helper.ComputeInitials(user.FirstName, user.LastName),
-                    Token = _tokenService.CreateToken(user)
+                    Token = _tokenService.CreateToken(user),
+                    UserId = user.UserId
                 });
             }
             catch (Exception ex)

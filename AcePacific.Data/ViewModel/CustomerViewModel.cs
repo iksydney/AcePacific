@@ -90,6 +90,7 @@ namespace AcePacific.Data.ViewModel
         public byte[]? ProfilePicture { get; set; }
         public string Token { get; set; }
         public string Initial { get; set; }
+        public string UserId { get; set; }
     }
     public class LoginDto
     {
