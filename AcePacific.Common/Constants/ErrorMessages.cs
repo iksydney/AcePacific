@@ -4,6 +4,7 @@
     {
         public static string GenericError = "Something went wrong, please try again Later";
         public static string UserEmailAlreadyExists = "User with that email already exists";
+        public static string InvalidEmail = "Please provide a valid email address";
         public static string UserCreationFailed = "User cration failed";
         public static string UserAlreadyDeactivated = "User already deactivated";
         public static string UserAlreadyActivated = "User already activated";

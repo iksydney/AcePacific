@@ -18,10 +18,10 @@ namespace AcePacific.Data.DataAccess
                 relationship.DeleteBehavior = DeleteBehavior.Cascade;
             }
         }
-        public DbSet<User> Users { get; set; }
-        public DbSet<Wallet> Wallets { get; set; }
-        public DbSet<OTP> OTPs { get; set; }
-        public DbSet<TransactionLog> TransactionLogs { get; set; }
-        public DbSet<Bank> Banks { get; set; }
+        public virtual DbSet<User> Users { get; set; }
+        public virtual DbSet<Wallet> Wallets { get; set; }
+        public virtual DbSet<OTP> OTPs { get; set; }
+        public virtual DbSet<TransactionLog> TransactionLogs { get; set; }
+        public virtual DbSet<Bank> Banks { get; set; }
     }
 }

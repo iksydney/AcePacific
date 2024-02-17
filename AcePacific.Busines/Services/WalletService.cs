@@ -90,7 +90,7 @@ namespace AcePacific.Busines.Services
 
                 await _walletRepository.UpdateAsync(senderDetails);
 
-                accountDetails.WalletBalance += model.Amount;
+                accountDetails.WalletBalance += model.Amount; 
                 await _walletRepository.UpdateAsync(accountDetails);
 
                 response = Response<string>.Success("Transfer completed Successfully");

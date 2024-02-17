@@ -9,11 +9,13 @@ using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Text.RegularExpressions;
 
 namespace AcePacific.Busines.Services
 {
     public interface IUserService
     {
+        //Task<Response<string>> ChangePassword(string userId, ChangePassword model);
         Task<Response<PhoneNumberExistsDto>> CheckPhoneNumberExists(string phoneNumber);
         Task<Response<CountModel<CustomerItem>>> Count(int page, int pagesize, CustomerFilter filter);
         Task<Response<CustomerModel>> GetUserById(string userId);
@@ -31,9 +33,10 @@ namespace AcePacific.Busines.Services
         private readonly IMapper _mapper;
         private readonly ITokenService _tokenService;
         private readonly IWalletRepository _walletRepository;
+        private readonly IMailService _mailService;
         public UserService(IUserRepository userRepository, UserManager<User> userManager, SignInManager<User> signInManager,
             IMapper mapper, ITokenService tokenService,
-            IWalletRepository walletReposiroty)
+            IWalletRepository walletReposiroty, IMailService mailService)
         {
             _userRepository = userRepository;
             _userManager = userManager;
@@ -41,6 +44,8 @@ namespace AcePacific.Busines.Services
             _mapper = mapper;
             _tokenService = tokenService;
             _walletRepository = walletReposiroty;
+            _mailService = mailService;
+
         }
         public async Task<Response<PhoneNumberExistsDto>> CheckPhoneNumberExists(string phoneNumber)
         {
@@ -78,6 +83,7 @@ namespace AcePacific.Busines.Services
                 var result = await _signInManager.CheckPasswordSignInAsync(user, model.Password, false);
                 if (!result.Succeeded)
                     return Response<LoginItem>.Failed(ErrorMessages.UserNameOrPasswordIncorrect);
+
                 response = Response<LoginItem>.Success(new LoginItem
                 {
                     Email = user.Email,
@@ -125,6 +131,9 @@ namespace AcePacific.Busines.Services
             var response = Response<CustomerViewItem>.Failed(string.Empty);
             try
             {
+                bool isEmail = Regex.IsMatch(model.Email, @"\A(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)\Z", RegexOptions.IgnoreCase);
+                if(!isEmail)
+                    return Response<CustomerViewItem>.Failed(ErrorMessages.InvalidEmail);
                 var userEmailExists = _userRepository.EmailExiststs(model.Email);
                 var phoneExists = _userRepository.PhoneNumberExists(model.PhoneNumber);
                 var userName = _userRepository.UserNameExists(model.UserName);
@@ -145,6 +154,18 @@ namespace AcePacific.Busines.Services
 
                 if (checkAccountNumberExists)
                     return Response<CustomerViewItem>.Failed(ErrorMessages.UserCreationFailed);
+
+                EmailTemplate emailTemplate = new()
+                {
+                    AccountNumber = "9034343343",
+                    FirstName = model.FirstName,
+                    LastName = model.LastName,
+                    Email = model.Email
+                };
+
+                await _mailService.SendWelcomeEmailAsync(emailTemplate);
+
+
 
                 var user = new RegisterUserModel
                 {
@@ -187,6 +208,7 @@ namespace AcePacific.Busines.Services
                         PhoneNumber = model.PhoneNumber,
                         Token = _tokenService.CreateToken(user)
                     });
+
                 }
                 else
                 {
@@ -200,6 +222,33 @@ namespace AcePacific.Busines.Services
             return await Task.FromResult(response).ConfigureAwait(false);
         }
 
+        /*public async Task<Response<string>> ChangePassword(string userId, ChangePassword model)
+        {
+            var response = Response<string>.Failed(string.Empty);
+            try
+            {
+                var entity = _userRepository.Table.AsNoTracking().FirstOrDefaultAsync(c => c.Id == userId);
+                if (entity == null)
+                    return Response<string>.Failed($"No user found");
+                var oldHashedPassword = _userManager.CheckPasswordAsync(entity, model.OldPassword);
+                
+                if (!oldHashedPassword.IsCompleted)
+                    return Response<string>.Failed("Old password do not match with the inputted passsword");
+
+                if (model.NewPassword != model.ConfirmPassword)
+                    return Response<string>.Failed("Passwords do not match");
+
+                var changedPassword = await _userManager.ChangePasswordAsync(entity, model.OldPassword, model.NewPassword);
+                if (changedPassword.Succeeded)
+                    response = Response<string>.Success("Password changed successfully");
+
+            }catch(Exception ex)
+            {
+                response = Response<string>.Failed(ex.Message);
+            }
+            return await Task.FromResult(response);
+
+        }*/
         public async Task<Response<UpdateUserView>> UpdateUser(string id, UpdateUserModel model)
         {
             var response = Response<UpdateUserView>.Failed(string.Empty);

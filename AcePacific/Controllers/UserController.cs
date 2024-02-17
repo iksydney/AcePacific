@@ -61,6 +61,21 @@ namespace AcePacific.API.Controllers
                 return BadRequest(ex.Message);
             }
         }
+        
+        /*[HttpPost("ChangePassword")]
+        public async Task<ActionResult<Response<LoginItem>>> ChangePassword(string userId, ChangePassword model)
+        {
+            try
+            {
+                var response = await _userService.ChangePassword(userId, model);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }*/
+
         [HttpPost("UpdateProfilePicture")]
         public async Task<ActionResult<Response<string>>> UpdateProfileImage(string userId, IFormFile imageFile)
         {

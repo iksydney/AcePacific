@@ -9,4 +9,12 @@
 		<PackageReference Include="LinqKit" Version="1.2.4" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 	</ItemGroup>
+	<ItemGroup>
+	  <Folder Include="Templates\" />
+	</ItemGroup>
+	<ItemGroup>
+	  <None Update="Templates\welcome.html">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	</ItemGroup>
 </Project>
