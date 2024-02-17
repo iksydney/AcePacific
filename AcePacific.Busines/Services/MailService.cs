@@ -51,7 +51,7 @@ namespace AcePacific.Busines.Services
                 using (SmtpClient mailClient = new SmtpClient())
                 {
                     mailClient.Connect(_mailSettings.Server, _mailSettings.Port, SecureSocketOptions.StartTls);
-                    mailClient.Authenticate(_mailSettings.UserName, _mailSettings.Password);
+                    mailClient.Authenticate(_mailSettings.UserName, _mailSettings.Credentials);
                     mailClient.Send(emailMessage);
                     mailClient.Disconnect(true);
                 }
@@ -98,7 +98,7 @@ namespace AcePacific.Busines.Services
 
                     using SmtpClient mailClient = new();
                     mailClient.Connect(_mailSettings.Server, _mailSettings.Port, MailKit.Security.SecureSocketOptions.StartTls);
-                    mailClient.Authenticate(_mailSettings.SenderEmail, _mailSettings.Password);
+                    mailClient.Authenticate(_mailSettings.SenderEmail, _mailSettings.Credentials);
                     mailClient.Send(emailMessage);
                     mailClient.Disconnect(true);
                 }
