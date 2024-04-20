@@ -135,13 +135,13 @@ namespace AcePacific.Busines.Services
                 if(!isEmail)
                     return Response<CustomerViewItem>.Failed(ErrorMessages.InvalidEmail);
                 var userEmailExists = _userRepository.EmailExiststs(model.Email);
-                var phoneExists = _userRepository.PhoneNumberExists(model.PhoneNumber);
+                //var phoneExists = _userRepository.PhoneNumberExists(model.PhoneNumber);
                 var userName = _userRepository.UserNameExists(model.UserName);
 
                 if (userEmailExists)
                     return Response<CustomerViewItem>.Failed(ErrorMessages.UserEmailAlreadyExists);
-                if (phoneExists)
-                    return Response<CustomerViewItem>.Failed(ErrorMessages.phoneNumberExists);
+                /*if (phoneExists)
+                    return Response<CustomerViewItem>.Failed(ErrorMessages.phoneNumberExists);*/
                 if (userName)
                     return Response<CustomerViewItem>.Failed(ErrorMessages.UserNameExists);
 
