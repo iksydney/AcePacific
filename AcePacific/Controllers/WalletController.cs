@@ -165,5 +165,46 @@ namespace AcePacific.API.Controllers
                 return BadRequest();
             }
         }
+        [HttpGet("ApproveAdminPendingTransactionsById")]
+        public async Task<ActionResult<Response<string>>> ApproveAdminPendingTransactionsById(int id)
+        {
+            try
+            {
+                var response = await _walletSevice.ApproveAdminPendingTransactionsById(id);
+                return Ok(response);
+            }
+            catch(Exception e)
+            {
+                return BadRequest();
+            }
+        }
+        
+        [HttpGet("GetAdminPendingTransactionsById")]
+        public async Task<ActionResult<Response<string>>> GetAdminPendingTransactionsById(int id)
+        {
+            try
+            {
+                var response = await _walletSevice.GetAdminPendingTransactionsById(id);
+                return Ok(response);
+            }
+            catch(Exception e)
+            {
+                return BadRequest();
+            }
+        }
+        
+        [HttpGet("ViewAdminPendingTransactionsHistory")]
+        public async Task<ActionResult<Response<string>>> ViewAdminPendingTransactionsHistory()
+        {
+            try
+            {
+                var response = await _walletSevice.ViewAdminPendingTransactionsHistory();
+                return Ok(response);
+            }
+            catch(Exception e)
+            {
+                return BadRequest();
+            }
+        }
     }
 }

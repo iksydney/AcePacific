@@ -26,6 +26,7 @@ namespace AcePacific.Data.Entities
         public string? IBANNumber { get; set; }
         public DateTime? DateCreated { get; set; }
         public DateTime? DateUpdated { get; set; }
+        public bool AdminStatus { get; set; }
         public TransactionType? TransactionType { get; set; }
     }
     public enum TransactionType

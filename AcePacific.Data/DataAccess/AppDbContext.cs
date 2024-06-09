@@ -23,5 +23,6 @@ namespace AcePacific.Data.DataAccess
         public virtual DbSet<OTP> OTPs { get; set; }
         public virtual DbSet<TransactionLog> TransactionLogs { get; set; }
         public virtual DbSet<Bank> Banks { get; set; }
+        public virtual DbSet<AdminPendingTransactions> AdminPendingTransactions { get; set; }
     }
 }

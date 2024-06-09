@@ -23,6 +23,9 @@ namespace AcePacific.Busines.Services
         Task<Response<string>> CreatePin(ValidatePinModel model);
         Task<Response<TransactionHistoryView>> GettransactionByReference(string reference);
         Task<Response<IEnumerable<TransactionHistoryView>>> ViewUserTransactionHistory(string userId);
+        Task<Response<AdminPendingTransactions>> GetAdminPendingTransactionsById(int id);
+        Task<Response<string>> ApproveAdminPendingTransactionsById(int id);
+        Task<Response<List<AdminPendingTransactions>>> ViewAdminPendingTransactionsHistory();
     }
     public class WalletService : IWalletService
     {
@@ -30,15 +33,18 @@ namespace AcePacific.Busines.Services
         private readonly IUserRepository _userRepository;
         private readonly IMapper _mapper;
         private readonly ITransactionLogRepository _transactionLogRepository;
+        private readonly IAdminPendingTransactionsRepository _adminPendingTransactionsRepository;
         private readonly ILogger<WalletService> _logger;
         public WalletService(IWalletRepository walletRepository, IUserRepository userRepository, IMapper mapper, ITransactionLogRepository transactionLogRepository,
-            ILogger<WalletService> logger)
+            ILogger<WalletService> logger, IAdminPendingTransactionsRepository adminPendingTransactionsRepository)
         {
             _walletRepository = walletRepository;
             _userRepository = userRepository;
             _mapper = mapper;
             _transactionLogRepository = transactionLogRepository;
             _logger = logger;
+            _adminPendingTransactionsRepository = adminPendingTransactionsRepository;
+
         }
         public async Task<Response<string>> IntraTransfer(IntraTransferDto model)
         {
@@ -176,16 +182,34 @@ namespace AcePacific.Busines.Services
                     SenderAddress = model.SenderAddress,
                     RoutingNumber = model.RoutingNumber,
                     SwiftCode = model.SwiftCode,
-                    BankName = model.BankName
+                    BankName = model.BankName,
+                    AdminStatus = false
                 };
                 var mappedTransactionLog = _mapper.Map<TransactionLog>(transactionLog);
+
+
                 await _transactionLogRepository.InsertAsync(mappedTransactionLog);
+
 
                 await _walletRepository.UpdateAsync(senderDetails);
 
-                accountDetails.WalletBalance += model.TransactionAmount;
-
                 await _walletRepository.UpdateAsync(accountDetails);
+
+                var pendingApproval = new AdminPendingTransactions()
+                {
+                    DateCreated = DateTime.Now,
+                    FromAccountName = senderUserName?.AccountName,
+                    ToAccountName = model.AccountName,
+                    SwiftCode = model.SwiftCode,
+                    RoutingNumber = model.RoutingNumber,
+                    TransactionAmount = model.TransactionAmount,
+                    TransactionNarration = model.TransactionNarration,
+                    SenderAddress = model.SenderAddress,
+                    PostalCode = model.PostalCode,
+                    ApproveTransaction = false,
+                    TransactionIdPending = mappedTransactionLog.Id,
+                };
+                var adminLog = _adminPendingTransactionsRepository.InsertAsync(pendingApproval);
 
                 response = Response<string>.Success("Transfer completed Successfully");
             }
@@ -196,6 +220,68 @@ namespace AcePacific.Busines.Services
             return await Task.FromResult(response);
         }
 
+        public async Task<Response<AdminPendingTransactions>> GetAdminPendingTransactionsById(int id)
+        {
+            var response = Response<AdminPendingTransactions>.Failed(string.Empty);
+            try
+            {
+                var entity = _adminPendingTransactionsRepository.Table.FirstOrDefault(x => x.Id == id);
+                if(entity  == null)
+                    return Response<AdminPendingTransactions>.Failed("transaction Not found");
+
+                response = Response<AdminPendingTransactions>.Success(entity);
+            }
+            catch (Exception ex)
+            {
+                response = Response<AdminPendingTransactions>.Failed(ex.Message);
+            }
+            return await Task.FromResult(response);
+        }
+        public async Task<Response<string>> ApproveAdminPendingTransactionsById(int id)
+        {
+            var response = Response<string>.Failed(string.Empty);
+            try
+            {
+                var entity = _adminPendingTransactionsRepository.Table.FirstOrDefault(x => x.Id == id);
+                if(entity  == null)
+                    return Response<string>.Failed("transaction Not found");
+
+                entity.ApproveTransaction = !entity.ApproveTransaction;
+                await _adminPendingTransactionsRepository.UpdateAsync(entity);
+
+                var transactionLogEntity = _transactionLogRepository.Table.FirstOrDefault(x => x.Id == entity.TransactionIdPending);
+                if (transactionLogEntity == null)
+                    return Response<string>.Failed("transaction log Not found");
+                transactionLogEntity.AdminStatus = true;
+                await _transactionLogRepository.UpdateAsync(transactionLogEntity);
+                response = Response<string>.Success("Transaction Updated Successfully");
+            }
+            catch (Exception ex)
+            {
+                response = Response<string>.Failed(ex.Message);
+            }
+            return await Task.FromResult(response);
+        }
+        public async Task<Response<List<AdminPendingTransactions>>> ViewAdminPendingTransactionsHistory()
+        {
+            var response = Response<List<AdminPendingTransactions>>.Failed(string.Empty);
+            try
+            {
+                var today = DateTime.UtcNow;
+                var oneMonthAgo = today.AddMonths(-11);
+                var entity = _adminPendingTransactionsRepository.Table.Where(x => x.DateCreated >= oneMonthAgo && x.DateCreated < today).OrderByDescending(x => x.DateCreated).ToList();
+
+
+                response = Response<List<AdminPendingTransactions>>.Success(entity);
+
+            }
+            catch (Exception ex)
+            {
+                response = Response<List<AdminPendingTransactions>>.Failed(ex.Message);
+                _logger.LogError(ex.Message);
+            }
+            return await Task.FromResult(response).ConfigureAwait(false);
+        }
         public async Task<Response<IEnumerable<TransactionHistoryView>>> ViewUserTransactionHistory(string userId)
         {
             var response = Response<IEnumerable<TransactionHistoryView>>.Failed(string.Empty);

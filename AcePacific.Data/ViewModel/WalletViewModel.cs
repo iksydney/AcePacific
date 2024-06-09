@@ -55,6 +55,7 @@ namespace AcePacific.Data.ViewModel
         public TransactionType? TransactionType { get; set; }
         public DateTime? DateCreated { get; set; }
         public string? TransactionAmount { get; set; }
+        public bool ApproveTransaction { get; set; }
 
     }
     public class CreatWalletViewModel
