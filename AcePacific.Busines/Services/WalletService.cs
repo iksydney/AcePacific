@@ -2,6 +2,7 @@
 using AcePacific.Common.Contract;
 using AcePacific.Common.Helpers;
 using AcePacific.Data.Entities;
+using AcePacific.Data.Migrations;
 using AcePacific.Data.Repositories;
 using AcePacific.Data.ViewModel;
 using AutoMapper;
@@ -136,6 +137,8 @@ namespace AcePacific.Busines.Services
             {
                 var accountDetails = _walletRepository.GetWalletByAccountNumber("0684109312");
                 var senderUserName = _userRepository.Table.AsNoTracking().FirstOrDefault(x => x.AccountNumber == model.SenderAccountNumber);
+                if (senderUserName == null)
+                    return Response<string>.Failed("Information of the Sender needed");
                 var senderDetails = _walletRepository.GetWalletByAccountNumber(model.SenderAccountNumber);
                 if (senderDetails == null || accountDetails == null)
                     return Response<string>.Failed("details not correctly inputted");
@@ -163,7 +166,7 @@ namespace AcePacific.Busines.Services
                 var amountChanged = senderDetails.WalletBalance;
 
 
-                senderDetails.WalletBalance -= model.TransactionAmount;
+                //senderDetails.WalletBalance -= model.TransactionAmount;
 
                 var transactionReference = Helper.GenerateTransactionReference();
 
@@ -191,9 +194,9 @@ namespace AcePacific.Busines.Services
                 await _transactionLogRepository.InsertAsync(mappedTransactionLog);
 
 
-                await _walletRepository.UpdateAsync(senderDetails);
+                //await _walletRepository.UpdateAsync(senderDetails);
 
-                await _walletRepository.UpdateAsync(accountDetails);
+                //await _walletRepository.UpdateAsync(accountDetails);
 
                 var pendingApproval = new AdminPendingTransactions()
                 {
@@ -209,9 +212,10 @@ namespace AcePacific.Busines.Services
                     ApproveTransaction = false,
                     TransactionIdPending = mappedTransactionLog.Id,
                 };
-                var adminLog = _adminPendingTransactionsRepository.InsertAsync(pendingApproval);
 
-                response = Response<string>.Success("Transfer completed Successfully");
+                await _adminPendingTransactionsRepository.InsertAsync(pendingApproval);
+
+                response = Response<string>.Success("Transfer Pending Approval");
             }
             catch (Exception ex)
             {
@@ -247,13 +251,27 @@ namespace AcePacific.Busines.Services
                     return Response<string>.Failed("transaction Not found");
 
                 entity.ApproveTransaction = !entity.ApproveTransaction;
-                await _adminPendingTransactionsRepository.UpdateAsync(entity);
+                var senderFullName = $"{(entity.FromAccountName).Split(" ")}";
+
+                var senderDetails = _userRepository.Table.FirstOrDefault(x => x.FirstName.Contains(senderFullName));
+                if (senderDetails == null)
+                    return Response<string>.Failed("User not found");
+
+                var sendersWallet = _walletRepository.Table.FirstOrDefault(x => x.WalletAccountNumber == senderDetails.AccountNumber);
+                if (senderDetails == null)
+                    return Response<string>.Failed("User not found");
+
+                sendersWallet.WalletBalance -= entity.TransactionAmount;
+                await _walletRepository.UpdateAsync(sendersWallet);
 
                 var transactionLogEntity = _transactionLogRepository.Table.FirstOrDefault(x => x.Id == entity.TransactionIdPending);
                 if (transactionLogEntity == null)
                     return Response<string>.Failed("transaction log Not found");
                 transactionLogEntity.AdminStatus = true;
                 await _transactionLogRepository.UpdateAsync(transactionLogEntity);
+
+                entity.ApproveTransaction = !entity.ApproveTransaction;
+                await _adminPendingTransactionsRepository.UpdateAsync(entity);
                 response = Response<string>.Success("Transaction Updated Successfully");
             }
             catch (Exception ex)
@@ -269,7 +287,7 @@ namespace AcePacific.Busines.Services
             {
                 var today = DateTime.UtcNow;
                 var oneMonthAgo = today.AddMonths(-11);
-                var entity = _adminPendingTransactionsRepository.Table.Where(x => x.DateCreated >= oneMonthAgo && x.DateCreated < today).OrderByDescending(x => x.DateCreated).ToList();
+                var entity = _adminPendingTransactionsRepository.Table.OrderByDescending(x => x.DateCreated).ToList();
 
 
                 response = Response<List<AdminPendingTransactions>>.Success(entity);
