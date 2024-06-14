@@ -159,5 +159,17 @@ namespace AcePacific.API.Controllers
                 return BadRequest(Response<IEnumerable<CustomerItem>>.Failed(ErrorMessages.GenericError));
             }
         }
+        [HttpPut("UploadUserImageCloudinary")]
+        public async Task<ActionResult<Response<string>>> UploadUserImageCloudinary(string userId, IFormFile imageFile)
+        {
+            try
+            {
+                var result = await _userService.UploadUserImageCloudinary(userId, imageFile);
+                return Ok(result);
+            }catch(Exception ex)
+            {
+                return BadRequest(Response<string>.Failed(ErrorMessages.GenericError));
+            }
+        }
     }
 }

@@ -4,6 +4,7 @@
     {
         public int Id { get; set; }
         public string FromAccountName { get; set; }
+        public string FromAccountNumber { get; set; }
         public string ToAccountName { get; set; }
         public string SwiftCode { get; set; }
         public string RoutingNumber { get; set; }

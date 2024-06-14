@@ -24,6 +24,7 @@ namespace AcePacific.Busines.Services
         Task<Response<CustomerViewItem>> RegisterUser(RegisterUserModel model);
         Task<Response<UpdateUserView>> UpdateUser(string id, UpdateUserModel model);
         Task<Response<string>> UploadUserImage(string userId, IFormFile imageFile);
+        Task<Response<string>> UploadUserImageCloudinary(string userId, IFormFile imageFile);
     }
     public class UserService : IUserService
     {
@@ -34,9 +35,10 @@ namespace AcePacific.Busines.Services
         private readonly ITokenService _tokenService;
         private readonly IWalletRepository _walletRepository;
         private readonly IMailService _mailService;
+        private readonly IImageAccessor _imageAccessor;
         public UserService(IUserRepository userRepository, UserManager<User> userManager, SignInManager<User> signInManager,
             IMapper mapper, ITokenService tokenService,
-            IWalletRepository walletReposiroty, IMailService mailService)
+            IWalletRepository walletReposiroty, IMailService mailService, IImageAccessor imageAccessor)
         {
             _userRepository = userRepository;
             _userManager = userManager;
@@ -45,7 +47,7 @@ namespace AcePacific.Busines.Services
             _tokenService = tokenService;
             _walletRepository = walletReposiroty;
             _mailService = mailService;
-
+            _imageAccessor = imageAccessor;
         }
         public async Task<Response<PhoneNumberExistsDto>> CheckPhoneNumberExists(string phoneNumber)
         {
@@ -111,7 +113,7 @@ namespace AcePacific.Busines.Services
             try
             {
                 var entity = _userRepository.FindUserById(userId);
-                
+
                 var mappedEntity = _mapper.Map<CustomerModel>(entity);
                 if (mappedEntity.ProfilePicture == null)
                 {
@@ -119,7 +121,8 @@ namespace AcePacific.Busines.Services
                 }
                 response = Response<CustomerModel>.Success(mappedEntity);
 
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 response = Response<CustomerModel>.Failed(ErrorMessages.GenericError + ex.Message);
             }
@@ -132,7 +135,7 @@ namespace AcePacific.Busines.Services
             try
             {
                 bool isEmail = Regex.IsMatch(model.Email, @"\A(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)\Z", RegexOptions.IgnoreCase);
-                if(!isEmail)
+                if (!isEmail)
                     return Response<CustomerViewItem>.Failed(ErrorMessages.InvalidEmail);
                 var userEmailExists = _userRepository.EmailExiststs(model.Email);
                 //var phoneExists = _userRepository.PhoneNumberExists(model.PhoneNumber);
@@ -271,7 +274,8 @@ namespace AcePacific.Busines.Services
                 await _userRepository.UpdateAsync(entityExists, true);
                 var mappedUser = _mapper.Map(entityExists, userView);
                 response = Response<UpdateUserView>.Success(mappedUser);
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 response = Response<UpdateUserView>.Failed(ex.Message);
             }
@@ -359,10 +363,10 @@ namespace AcePacific.Busines.Services
                     }
 
                 }
-                    await _userRepository.UpdateAsync(user);
+                await _userRepository.UpdateAsync(user);
 
-                    // Save the updated user object to the database
-                    //await _userRepository.SaveAsync(mappedUser);
+                // Save the updated user object to the database
+                //await _userRepository.SaveAsync(mappedUser);
 
                 response = Response<string>.Success("User Image Updated");
             }
@@ -371,6 +375,27 @@ namespace AcePacific.Busines.Services
                 response = Response<string>.Failed(ex.Message);
             }
 
+            return await Task.FromResult(response);
+        }
+        public async Task<Response<string>> UploadUserImageCloudinary(string userId, IFormFile imageFile)
+        {
+            var response = Response<string>.Failed(string.Empty);
+            try
+            {
+                var user = _userRepository.FindUserById(userId);
+                if (user == null)
+                    return Response<string>.Failed(ErrorMessages.UserDoesntExist);
+
+                var imageUrl = await _imageAccessor.UploadImageAsync(imageFile);
+
+                user.ProfilePictureUrl = imageUrl.Result.ImageUrl;
+                await _userRepository.UpdateAsync(user, true);
+                response = Response<string>.Success("Image uploaded successfully");
+            }
+            catch (Exception ex)
+            {
+                response = Response<string>.Failed(ex.Message);
+            }
             return await Task.FromResult(response);
         }
 

@@ -34,6 +34,7 @@ namespace AcePacific.Data.ViewModel
 
     public class TransactionHistoryView
     {
+        public int Id { get; set; }
         public string? TransactionReference { get; set; }
         public string? Reference { get; set; }
         public string? AccountName { get; set; }

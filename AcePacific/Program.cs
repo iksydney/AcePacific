@@ -79,10 +79,13 @@ namespace AcePacific
                     });
                 });
                 services.AddSingleton(config.GetSection("AppSettings").Get<AppSettings>());
+                services.AddSingleton(config.GetSection("CloudinarySetting").Get<CloudinarySetting>());
                 services.AddSingleton(config.GetSection("MailSettings").Get<MailSettings>());
                 services.RegisterApplicationService<UserService>();
                 services.RegisterLibraryServices<AppDbContext, UserRepository>();
                 
+                services.AddScoped<IImageAccessor,  ImageAccessor>();
+
                 services.AddHttpClient("MailTrapApiClient", (services, client) =>
                 {
                     var mailSettings = services.GetRequiredService<IOptions<MailSettings>>().Value;

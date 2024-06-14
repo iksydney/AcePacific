@@ -211,6 +211,7 @@ namespace AcePacific.Busines.Services
                     PostalCode = model.PostalCode,
                     ApproveTransaction = false,
                     TransactionIdPending = mappedTransactionLog.Id,
+                    FromAccountNumber = model.SenderAccountNumber
                 };
 
                 await _adminPendingTransactionsRepository.InsertAsync(pendingApproval);
@@ -250,10 +251,11 @@ namespace AcePacific.Busines.Services
                 if(entity  == null)
                     return Response<string>.Failed("transaction Not found");
 
-                entity.ApproveTransaction = !entity.ApproveTransaction;
-                var senderFullName = $"{(entity.FromAccountName).Split(" ")}";
+                if (entity.ApproveTransaction == true)
+                    return Response<string>.Failed("Transaction Already approved");
 
-                var senderDetails = _userRepository.Table.FirstOrDefault(x => x.FirstName.Contains(senderFullName));
+
+                var senderDetails = _userRepository.Table.FirstOrDefault(x => x.AccountNumber == entity.FromAccountNumber);
                 if (senderDetails == null)
                     return Response<string>.Failed("User not found");
 
@@ -271,6 +273,7 @@ namespace AcePacific.Busines.Services
                 await _transactionLogRepository.UpdateAsync(transactionLogEntity);
 
                 entity.ApproveTransaction = !entity.ApproveTransaction;
+
                 await _adminPendingTransactionsRepository.UpdateAsync(entity);
                 response = Response<string>.Success("Transaction Updated Successfully");
             }
