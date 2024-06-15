@@ -87,10 +87,10 @@ namespace AcePacific.Data.ViewModel
         public string PhoneNumber { get; set; }
         public string Id { get; set; }
         public string AccountNumber { get; set; }
-        public byte[]? ProfilePicture { get; set; }
         public string Token { get; set; }
         public string Initial { get; set; }
         public string UserId { get; set; }
+        public string ProfilePictureUrl { get; set; }
     }
     public class LoginDto
     {

@@ -86,6 +86,10 @@ namespace AcePacific.Busines.Services
                 if (!result.Succeeded)
                     return Response<LoginItem>.Failed(ErrorMessages.UserNameOrPasswordIncorrect);
 
+                if(user.ProfilePictureUrl == null)
+                {
+                    user.ProfilePictureUrl = "";
+                }
                 response = Response<LoginItem>.Success(new LoginItem
                 {
                     Email = user.Email,
@@ -95,10 +99,10 @@ namespace AcePacific.Busines.Services
                     PhoneNumber = user.PhoneNumber,
                     Id = user.Id,
                     AccountNumber = user.AccountNumber,
-                    ProfilePicture = user.ProfilePicture,
                     Initial = Helper.ComputeInitials(user.FirstName, user.LastName),
                     Token = _tokenService.CreateToken(user),
-                    UserId = user.UserId
+                    UserId = user.UserId,
+                    ProfilePictureUrl = user.ProfilePictureUrl
                 });
             }
             catch (Exception ex)
