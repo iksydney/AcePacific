@@ -4,6 +4,7 @@ using AcePacific.Data.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AcePacific.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240708215414_Nullability")]
+    partial class Nullability
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -55,9 +57,6 @@ namespace AcePacific.Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ToAccountName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ToAccountNumber")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("TransactionAmount")

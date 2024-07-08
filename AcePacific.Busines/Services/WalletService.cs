@@ -54,6 +54,10 @@ namespace AcePacific.Busines.Services
             {
                 var accountDetails = _walletRepository.GetWalletByAccountNumber(model.RecipientWalletAccountNumber);
                 var recipientUserName = _userRepository.Table.AsNoTracking().FirstOrDefault(x => x.AccountNumber == model.RecipientWalletAccountNumber);
+                if(recipientUserName == null)
+                {
+                    return Response<string>.Failed("Recipirnt details is needed");
+                }
                 var senderUserName = _userRepository.Table.AsNoTracking().FirstOrDefault(x => x.AccountNumber == model.SenderWalletAccountNumber);
                 var senderDetails = _walletRepository.GetWalletByAccountNumber(model.SenderWalletAccountNumber);
 
@@ -76,7 +80,7 @@ namespace AcePacific.Busines.Services
                 var amountChanged = senderDetails.WalletBalance;
 
 
-                senderDetails.WalletBalance -= model.Amount;
+                
 
                 var transactionReference = Helper.GenerateTransactionReference();
 
@@ -91,16 +95,36 @@ namespace AcePacific.Busines.Services
                     TransactionType = TransactionType.InternalTransaction,
                     TransactionAmount = model.Amount.ToString(),
                     CreatedBy = senderUserName?.AccountName,
+                    AdminStatus = false
                 };
                 var mappedTransactionLog = _mapper.Map<TransactionLog>(transactionLog);
                 await _transactionLogRepository.InsertAsync(mappedTransactionLog);
 
-                await _walletRepository.UpdateAsync(senderDetails);
 
-                accountDetails.WalletBalance += model.Amount; 
-                await _walletRepository.UpdateAsync(accountDetails);
+                /* senderDetails.WalletBalance -= model.Amount;
+                 await _walletRepository.UpdateAsync(senderDetails);
 
-                response = Response<string>.Success("Transfer completed Successfully");
+                 accountDetails.WalletBalance += model.Amount; 
+                 await _walletRepository.UpdateAsync(accountDetails);
+
+                 response = Response<string>.Success("Transfer completed Successfully");*/
+
+                var pendingApproval = new AdminPendingTransactions()
+                {
+                    DateCreated = DateTime.Now,
+                    FromAccountName = senderUserName?.AccountName,
+                    ToAccountName = recipientUserName.AccountName,
+                    TransactionAmount = model.Amount,
+                    TransactionNarration = model.TransactionNarration,
+                    ApproveTransaction = false,
+                    TransactionIdPending = mappedTransactionLog.Id,
+                    FromAccountNumber = senderDetails.WalletAccountNumber,
+                    ToAccountNumber = recipientUserName.AccountNumber
+                };
+
+                await _adminPendingTransactionsRepository.InsertAsync(pendingApproval);
+
+                response = Response<string>.Success("Transfer Pending Approval");
             }
             catch (Exception ex)
             {
@@ -135,12 +159,12 @@ namespace AcePacific.Busines.Services
             var response = Response<string>.Failed(string.Empty);
             try
             {
-                var accountDetails = _walletRepository.GetWalletByAccountNumber("0684109312");
+                //var accountDetails = _walletRepository.GetWalletByAccountNumber("0684109312");
                 var senderUserName = _userRepository.Table.AsNoTracking().FirstOrDefault(x => x.AccountNumber == model.SenderAccountNumber);
                 if (senderUserName == null)
                     return Response<string>.Failed("Information of the Sender needed");
                 var senderDetails = _walletRepository.GetWalletByAccountNumber(model.SenderAccountNumber);
-                if (senderDetails == null || accountDetails == null)
+                if (senderDetails == null)
                     return Response<string>.Failed("details not correctly inputted");
 
                 if (senderDetails.Pin == null)
@@ -247,6 +271,7 @@ namespace AcePacific.Busines.Services
             var response = Response<string>.Failed(string.Empty);
             try
             {
+                var receiversWallet = new Wallet();
                 var entity = _adminPendingTransactionsRepository.Table.FirstOrDefault(x => x.Id == id);
                 if(entity  == null)
                     return Response<string>.Failed("transaction Not found");
@@ -262,9 +287,21 @@ namespace AcePacific.Busines.Services
                 var sendersWallet = _walletRepository.Table.FirstOrDefault(x => x.WalletAccountNumber == senderDetails.AccountNumber);
                 if (senderDetails == null)
                     return Response<string>.Failed("User not found");
+                if(entity.ToAccountNumber != null)
+                {
+                    receiversWallet = _walletRepository.Table.FirstOrDefault(c => c.WalletAccountNumber.Equals(entity.ToAccountNumber));
 
-                sendersWallet.WalletBalance -= entity.TransactionAmount;
-                await _walletRepository.UpdateAsync(sendersWallet);
+                    sendersWallet.WalletBalance -= entity.TransactionAmount;
+                    await _walletRepository.UpdateAsync(sendersWallet);
+
+                    receiversWallet.WalletBalance += entity.TransactionAmount;
+                    await _walletRepository.UpdateAsync(sendersWallet);
+                }
+                else
+                {
+                    sendersWallet.WalletBalance -= entity.TransactionAmount;
+                    await _walletRepository.UpdateAsync(sendersWallet);
+                }
 
                 var transactionLogEntity = _transactionLogRepository.Table.FirstOrDefault(x => x.Id == entity.TransactionIdPending);
                 if (transactionLogEntity == null)
