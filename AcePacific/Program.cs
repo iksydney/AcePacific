@@ -65,6 +65,7 @@ namespace AcePacific
                 {
                     options.UseSqlServer(connectionString);
                 }, ServiceLifetime.Scoped);
+                services.RunMigrations();
                 services.AddSwaggerGen();
                 services.SwaggerExtension();
                 services.AddCors(opt =>

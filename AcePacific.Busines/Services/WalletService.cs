@@ -88,7 +88,8 @@ namespace AcePacific.Busines.Services
                 {
                     DateCreated = DateTime.UtcNow,
                     Reference = transactionReference,
-                    UserId = senderDetails.UserId,
+                    SenderUserId = senderDetails.UserId,
+                    RecipientUserId = recipientUserName.Id,
                     RecipientAccountName = recipientUserName?.AccountName,
                     SenderAccountName = senderUserName?.AccountName,
                     TransactionNarration = model.TransactionNarration,
@@ -198,7 +199,7 @@ namespace AcePacific.Busines.Services
                 {
                     DateCreated = DateTime.UtcNow,
                     Reference = transactionReference,
-                    UserId = senderDetails.UserId,
+                    SenderUserId = senderDetails.UserId,
                     SenderAccountName = senderUserName?.AccountName,
                     TransactionAmount = model.TransactionAmount.ToString(),
                     CreatedBy = senderUserName?.AccountName,
@@ -347,7 +348,7 @@ namespace AcePacific.Busines.Services
             {
                 var today = DateTime.UtcNow;
                 var FilteredDate = today.AddDays(-365);
-                var entity = _transactionLogRepository.Table.Where(x => x.UserId == userId).OrderByDescending(x => x.DateCreated).ToList();
+                var entity = _transactionLogRepository.Table.Where(x => x.RecipientUserId == userId || x.SenderUserId == userId).OrderByDescending(x => x.DateCreated).ToList();
                 
                 var mappedEntity = _mapper.Map<IEnumerable<TransactionHistoryView>>(entity);
 

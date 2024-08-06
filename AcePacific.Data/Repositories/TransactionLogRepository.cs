@@ -82,7 +82,9 @@ namespace AcePacific.Data.Repositories
                     if (!string.IsNullOrEmpty(filter.Reference))
                         And(c => c.Reference.Contains(filter.Reference));
                     if (!string.IsNullOrEmpty(filter.UserId))
-                        And(c => c.UserId.ToLower().Contains(filter.UserId.ToLower()));
+                        And(c => c.RecipientUserId.ToLower().Contains(filter.UserId.ToLower()));
+                    if (!string.IsNullOrEmpty(filter.UserId))
+                        And(c => c.SenderUserId.ToLower().Contains(filter.UserId.ToLower()));
                     if (filter.DateCreatedFrom.HasValue)
                         And(c => c.DateCreated >= filter.DateCreatedFrom);
                     if (filter.DateCreatedTo.HasValue)

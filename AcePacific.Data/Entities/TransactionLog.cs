@@ -11,7 +11,8 @@ namespace AcePacific.Data.Entities
         public string? AccountNumber { get; set; }
         public int? BankId { get; set; }
         public string? BankName { get; set; }
-        public string? UserId { get; set; }
+        public string? RecipientUserId { get; set; }
+        public string? SenderUserId { get; set; }
         public string? CreatedBy { get; set; }
         public string? Sender { get; set; }
         public decimal? Charge { get; set; } = 0m;
