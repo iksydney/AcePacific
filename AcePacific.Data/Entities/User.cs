@@ -63,5 +63,6 @@ namespace AcePacific.Data.Entities
             }
         }
         public string Gender { get; set; }
+        public bool IsBlocked { get; set; } = false;
     }
 }

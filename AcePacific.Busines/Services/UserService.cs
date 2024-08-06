@@ -82,6 +82,10 @@ namespace AcePacific.Busines.Services
                 var user = await _userManager.FindByEmailAsync(model.Email);
                 if (user == null)
                     return Response<LoginItem>.Failed(ErrorMessages.UserNotFound);
+                if(user.IsBlocked == true)
+                {
+                    return Response<LoginItem>.Failed("This account has been blocked from transactions. Kindly email us at Contact@acepacificdigital.com for immediate assistance");
+                }
                 var result = await _signInManager.CheckPasswordSignInAsync(user, model.Password, false);
                 if (!result.Succeeded)
                     return Response<LoginItem>.Failed(ErrorMessages.UserNameOrPasswordIncorrect);

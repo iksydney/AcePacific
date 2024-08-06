@@ -346,8 +346,8 @@ namespace AcePacific.Busines.Services
             try
             {
                 var today = DateTime.UtcNow;
-                var twoWeeksAgo = today.AddDays(-14);
-                var entity = _transactionLogRepository.Table.Where(x => x.UserId == userId && x.DateCreated >= twoWeeksAgo && x.DateCreated < today).OrderByDescending(x => x.DateCreated).ToList();
+                var FilteredDate = today.AddDays(-365);
+                var entity = _transactionLogRepository.Table.Where(x => x.UserId == userId && x.DateCreated >= FilteredDate && x.DateCreated < today).OrderByDescending(x => x.DateCreated).ToList();
                 
                 var mappedEntity = _mapper.Map<IEnumerable<TransactionHistoryView>>(entity);
 
